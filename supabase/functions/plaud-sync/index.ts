@@ -28,49 +28,75 @@ const json = (body: unknown, status = 200) =>
     headers: { "content-type": "application/json" },
   });
 
-/** Archive audio to Storage without holding the file in worker memory.
- * 1) streaming pass-through (any size, bounded memory)
- * 2) buffered fallback for files under ARCHIVE_MAX_BYTES
- * Returns bytes stored, or null if archiving wasn't possible (e.g. Storage
- * per-file limit — raise it in dashboard Storage settings). */
+/** Archive audio to Storage with bounded memory at any size.
+ * ≤ ARCHIVE_MAX_BYTES: single buffered upload (simple, proven).
+ * Larger: TUS resumable upload — the source is read in 6MB Range slices and
+ * PATCHed sequentially, so the worker never holds more than one chunk.
+ * Throws on failure (caller records the error and bounds retries). */
+const TUS_CHUNK = 6 * 1024 * 1024; // Supabase requires exactly 6MB chunks (except the last)
+
 async function archiveAudio(
   presignedUrl: string,
   storagePath: string,
   size: number,
   // deno-lint-ignore no-explicit-any
   supabase: any,
-): Promise<number | null> {
-  const src = await fetch(presignedUrl);
-  if (!src.ok || !src.body) throw new Error(`audio download ${src.status}`);
-  const streamed = await fetch(
-    `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/plaud-audio/${storagePath}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-        "Content-Type": "audio/mpeg",
-        "x-upsert": "true",
-      },
-      body: src.body,
-      // @ts-ignore: Deno requires duplex for streaming request bodies
-      duplex: "half",
-    },
-  );
-  if (streamed.ok) return size || null;
-  await streamed.body?.cancel();
-
-  if (size && size > ARCHIVE_MAX_BYTES) return null; // too big to buffer
-  const retry = await fetch(presignedUrl);
-  if (!retry.ok) throw new Error(`audio download ${retry.status}`);
-  const buf = new Uint8Array(await retry.arrayBuffer());
-  const { error: upErr } = await supabase.storage
-    .from("plaud-audio")
-    .upload(storagePath, buf, { contentType: "audio/mpeg", upsert: true });
-  if (upErr) {
-    if (/exceeded the maximum allowed size/i.test(upErr.message)) return null;
-    throw new Error(`storage upload: ${upErr.message}`);
+): Promise<number> {
+  if (!size || size <= ARCHIVE_MAX_BYTES) {
+    const resp = await fetch(presignedUrl);
+    if (!resp.ok) throw new Error(`audio download ${resp.status}`);
+    const buf = new Uint8Array(await resp.arrayBuffer());
+    const { error: upErr } = await supabase.storage
+      .from("plaud-audio")
+      .upload(storagePath, buf, { contentType: "audio/mpeg", upsert: true });
+    if (upErr) throw new Error(`storage upload: ${upErr.message}`);
+    return buf.byteLength;
   }
-  return buf.byteLength;
+
+  const base = Deno.env.get("SUPABASE_URL");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const create = await fetch(`${base}/storage/v1/upload/resumable`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      apikey: key!,
+      "Tus-Resumable": "1.0.0",
+      "Upload-Length": String(size),
+      "Upload-Metadata":
+        `bucketName ${btoa("plaud-audio")},objectName ${btoa(storagePath)},contentType ${btoa("audio/mpeg")}`,
+      "x-upsert": "true",
+    },
+  });
+  if (create.status !== 201) {
+    throw new Error(`tus create ${create.status}: ${(await create.text()).slice(0, 150)}`);
+  }
+  const loc = create.headers.get("location");
+  if (!loc) throw new Error("tus create returned no location");
+  const uploadUrl = loc.startsWith("http") ? loc : `${base}${loc}`;
+
+  let offset = 0;
+  while (offset < size) {
+    const end = Math.min(offset + TUS_CHUNK, size) - 1;
+    const part = await fetch(presignedUrl, { headers: { Range: `bytes=${offset}-${end}` } });
+    if (!part.ok) throw new Error(`range read ${part.status} at ${offset}`);
+    const buf = new Uint8Array(await part.arrayBuffer());
+    const patch = await fetch(uploadUrl, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        apikey: key!,
+        "Tus-Resumable": "1.0.0",
+        "Upload-Offset": String(offset),
+        "Content-Type": "application/offset+octet-stream",
+      },
+      body: buf,
+    });
+    if (patch.status !== 204) {
+      throw new Error(`tus patch ${patch.status} at ${offset}: ${(await patch.text()).slice(0, 120)}`);
+    }
+    offset = Number(patch.headers.get("upload-offset") ?? offset + buf.byteLength);
+  }
+  return size;
 }
 
 function toDate(v: unknown): Date | null {
@@ -250,10 +276,17 @@ Deno.serve(async (req) => {
 
         const storagePath = `${day}/${rec.id}.mp3`;
         const size = await probeSize(detail.presigned_url);
-        const storedBytes = await archiveAudio(detail.presigned_url, storagePath, size, supabase);
-        const audioPath = storedBytes != null ? storagePath : null;
-        const audioBytes = storedBytes ?? (size || null);
-        if (storedBytes == null) stats.archive_skipped++;
+        // archive failure must never block transcription — the backfill pass
+        // retries the archive later (bounded by retry_count)
+        let audioPath: string | null = null;
+        let audioBytes: number | null = size || null;
+        try {
+          audioBytes = await archiveAudio(detail.presigned_url, storagePath, size, supabase);
+          audioPath = storagePath;
+        } catch (e) {
+          stats.archive_skipped++;
+          stats.errors.push(`archive ${rec.id}: ${String(e).slice(0, 150)}`);
+        }
 
         const requestId = await submitToDeepgram(detail.presigned_url, rec.id, secret, keyterms);
         await sql`insert into plaud.recordings (id, name, serial_number, started_at, created_at, duration_ms,
@@ -292,26 +325,26 @@ Deno.serve(async (req) => {
       }
     }
 
-    // backfill: recordings that transcribed without an archive copy (e.g.
-    // before streaming uploads / while the Storage size limit was low)
+    // backfill: recordings that completed without an archive copy. Attempts
+    // are bounded by retry_count so a permanently-unarchivable row can't
+    // occupy the two backfill slots forever (issue #1).
     const missing = await sql`select id, to_char(coalesce(started_at, created_at), 'YYYY-MM-DD') as day
       from plaud.recordings
       where audio_path is null and status in ('transcribed','processed')
-        and duration_ms >= ${MIN_DURATION_MS}
+        and duration_ms >= ${MIN_DURATION_MS} and retry_count < ${MAX_RETRIES}
       order by started_at desc limit 2`;
     for (const row of missing) {
       try {
         const detail = await plaudGet(token, `/open/third-party/files/${row.id}`);
-        if (!detail.presigned_url) continue;
+        if (!detail.presigned_url) throw new Error("no presigned_url");
         const path = `${row.day}/${row.id}.mp3`;
         const size = await probeSize(detail.presigned_url);
         const bytes = await archiveAudio(detail.presigned_url, path, size, supabase);
-        if (bytes != null) {
-          await sql`update plaud.recordings set audio_path = ${path}, audio_bytes = ${bytes}
-            where id = ${row.id}`;
-          stats.backfilled++;
-        }
+        await sql`update plaud.recordings set audio_path = ${path}, audio_bytes = ${bytes}
+          where id = ${row.id}`;
+        stats.backfilled++;
       } catch (e) {
+        await sql`update plaud.recordings set retry_count = retry_count + 1 where id = ${row.id}`;
         stats.errors.push(`backfill ${row.id}: ${String(e).slice(0, 150)}`);
       }
     }
@@ -327,14 +360,40 @@ Deno.serve(async (req) => {
       routineFired = await fireRoutine(
         `Fallback sweep: ${awaiting} transcript(s) awaiting processing in plaud.recordings (oldest ${Math.round(oldestS / 60)} min). Sweep status='transcribed'.`,
       );
+      if (routineFired.startsWith("http")) {
+        await sql`update plaud.context set routine_last_fired_at = now() where id = 1`;
+      }
     }
 
-    const result = { ok: true, listed: listed.length, awaiting_routine: awaiting, routine_fired: routineFired, ...stats };
-    await sql`insert into plaud.sync_runs (listed, submitted, skipped_short, archive_skipped, backfilled, resubmitted, awaiting_routine, routine_fired, errors)
-      values (${listed.length}, ${stats.submitted}, ${stats.skipped_short}, ${stats.archive_skipped}, ${stats.backfilled}, ${stats.resubmitted}, ${awaiting}, ${routineFired}, ${JSON.stringify(stats.errors)}::jsonb)`;
+    // dead letters (issue #4): work that exhausted its retry budget
+    const deadLettered = await sql`select id, name, status, retry_count, left(coalesce(error,'archive missing'), 200) as error
+      from plaud.recordings
+      where retry_count >= ${MAX_RETRIES}
+        and (status = 'error' or (audio_path is null and status in ('transcribed','processed') and duration_ms >= ${MIN_DURATION_MS}))`;
+
+    // repeated-failure escalation (issue #7): 3 consecutive erroring runs
+    const recent = await sql`select errors from plaud.sync_runs order by ran_at desc limit 2`;
+    // deno-lint-ignore no-explicit-any
+    const priorFailing = recent.length === 2 && recent.every((r: any) => Array.isArray(r.errors) && r.errors.length > 0);
+    const alert = stats.errors.length > 0 && priorFailing
+      ? "ALERT: three consecutive sync runs have errored — check Plaud API / secrets"
+      : null;
+
+    const result = {
+      ok: true, listed: listed.length, awaiting_routine: awaiting, routine_fired: routineFired,
+      dead_lettered: deadLettered, reauth_required: false, alert, ...stats,
+    };
+    await sql`insert into plaud.sync_runs (listed, submitted, skipped_short, archive_skipped, backfilled, resubmitted, awaiting_routine, routine_fired, errors, dead_lettered, reauth_required)
+      values (${listed.length}, ${stats.submitted}, ${stats.skipped_short}, ${stats.archive_skipped}, ${stats.backfilled}, ${stats.resubmitted}, ${awaiting}, ${routineFired}, ${JSON.stringify(stats.errors)}::jsonb, ${JSON.stringify(deadLettered)}::jsonb, false)`;
     return json(result);
   } catch (e) {
-    return json({ ok: false, error: String(e).slice(0, 500), ...stats }, 500);
+    const msg = String(e).slice(0, 500);
+    const reauth = /reauth/i.test(msg);
+    try {
+      await sql`insert into plaud.sync_runs (listed, submitted, skipped_short, archive_skipped, backfilled, resubmitted, awaiting_routine, routine_fired, errors, reauth_required)
+        values (0, 0, 0, 0, 0, 0, 0, 'run failed', ${JSON.stringify([msg])}::jsonb, ${reauth})`;
+    } catch { /* recording the failure is best-effort */ }
+    return json({ ok: false, error: msg, reauth_required: reauth, ...stats }, 500);
   } finally {
     await sql.end();
   }

@@ -107,7 +107,18 @@ Deno.serve(async (req) => {
         transcript_source = 'deepgram', status = 'transcribed', error = null
       where id = ${fileId}`;
 
-    const fired = await fireRoutine(rec.name, fileId);
+    // coalesce fires (issue #6): each routine run sweeps up to 20 rows, so a
+    // burst of transcripts needs only one fire. The plaud-sync fallback sweep
+    // (issue #3) guarantees coalesced-away rows still get processed.
+    const [ctx] = await sql`select routine_last_fired_at from plaud.context where id = 1`;
+    const lastMs = ctx?.routine_last_fired_at ? new Date(ctx.routine_last_fired_at).getTime() : 0;
+    let fired = "coalesced (fired within last 3 min; sweep covers this row)";
+    if (Date.now() - lastMs > 3 * 60 * 1000) {
+      fired = await fireRoutine(rec.name, fileId);
+      if (fired.startsWith("http")) {
+        await sql`update plaud.context set routine_last_fired_at = now() where id = 1`;
+      }
+    }
     console.log(`transcript stored for ${fileId} (${rec.name}); routine: ${fired}`);
     return json({ ok: true, transcribed: true, routine: fired });
   } catch (e) {

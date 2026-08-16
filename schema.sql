@@ -14,7 +14,10 @@ create table if not exists plaud.recordings (
   status        text not null default 'new'
                 check (status in ('new','downloaded','transcribed','processed','error')),
   error         text,
-  retry_count   int not null default 0,
+  retry_count   int not null default 0,     -- ingest retries AND backfill attempts, max 5
+  dg_request_id text,                       -- Deepgram async job id
+  submitted_at  timestamptz,                -- when sent to Deepgram (stale >30min → resubmit)
+  waveform_peaks jsonb,                     -- 500-bucket envelope, cached by the PWA
 
   transcript_source text check (transcript_source in ('plaud','deepgram','parakeet','whisper')),
   transcript    jsonb,                         -- [{speaker,start_ms,end_ms,text}]
@@ -50,9 +53,29 @@ create table if not exists plaud.context (
   id         int primary key default 1 check (id = 1),
   about_md   text not null,
   keyterms   text[] not null default '{}',
+  routine_last_fired_at timestamptz,        -- coalescing window for routine fires
   updated_at timestamptz not null default now()
 );
 grant all on plaud.context to service_role;
+
+-- Per-run sync observability (powers "Synced 2m ago", trend checks, alerts)
+create table if not exists plaud.sync_runs (
+  id              bigint generated always as identity primary key,
+  ran_at          timestamptz not null default now(),
+  listed          int,
+  submitted       int,
+  skipped_short   int,
+  archive_skipped int,
+  backfilled      int,
+  resubmitted     int,
+  awaiting_routine int,
+  routine_fired   text,
+  errors          jsonb,
+  dead_lettered   jsonb,
+  reauth_required boolean not null default false
+);
+grant all on plaud.sync_runs to service_role;
+create index if not exists sync_runs_ran_at_idx on plaud.sync_runs (ran_at desc);
 
 -- Plaud OAuth token custody (seeded from ~/.plaud/tokens.json after `plaud login`)
 create table if not exists plaud.credentials (

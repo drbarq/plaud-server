@@ -29,14 +29,21 @@ Plaud Note Pro ──(app sync, free tier)──▶ Plaud cloud
                               ▼
    Deepgram ──(async, seconds later)──▶ edge fn deepgram-callback
                               │  store diarized transcript → status='transcribed'
-                              │  inline Claude (Haiku, forced tool call):
-                              │  bucket · title · summary · action items · tags
+                              │  fire cloud routine plaud-process (coalesced:
+                              │  max one fire per 3 min — each run sweeps 20 rows)
+                              ▼
+   Claude cloud routine "plaud-process" (Joe's Max plan + connectors)
+   reads plaud.context → bucket · title · summary · action items · tags
                               ▼
                     plaud.recordings  status='processed'
-                              │
-   Claude cloud routine (daily) — aggregator: idea digest across buckets,
-   action-item routing, weekly synthesis (see routine-prompt.md)
+
+   Safety net: plaud-sync re-fires the routine if any transcript has waited
+   >15 min (lost fire, daily routine cap). Every run logs to plaud.sync_runs
+   with dead-letter and reauth flags.
 ```
+
+Large recordings (>45MB) are archived via TUS resumable upload in 6MB chunks,
+so multi-hour meetings never exceed worker memory or a single-request limit.
 
 Status flow: `new → downloaded → transcribed → processed` (+ `error` with
 `retry_count`, max 5, swept by every sync run).
@@ -52,7 +59,10 @@ Buckets: `journal · idea · task · meeting · project-note · reference · mis
    Secrets (or `supabase secrets set`):
    - `PLAUD_SYNC_SECRET` — must equal the `plaud_sync_secret` in Vault
    - `DEEPGRAM_API_KEY`
-   - `ANTHROPIC_API_KEY`
+   - `DEEPGRAM_CALLBACK_SECRET` — distinct credential embedded in callback URLs
+   - `ROUTINE_FIRE_TOKEN` — the plaud-process routine's API-trigger bearer token
+     (regenerate at claude.ai/code/routines if lost; no Anthropic API key is
+     used anywhere — smart processing runs on the Claude subscription)
 3. Until secrets are set, the 10-minute cron fires and gets a clean
    "not configured" error — harmless.
 
@@ -64,18 +74,22 @@ curl -s -X POST \
   https://szsnocakbnrfoaauiqkr.supabase.co/functions/v1/plaud-sync
 ```
 
-Returns `{ok, listed, submitted, resubmitted, summarized, errors[]}`. The PWA
-button does exactly this (phase 2 swaps the shared secret for a Supabase Auth
-JWT check).
+Returns `{ok, listed, awaiting_routine, routine_fired, dead_lettered[],
+reauth_required, alert, submitted, skipped_short, archive_skipped, backfilled,
+resubmitted, errors[]}`. The PWA button does exactly this (phase 2 swaps the
+shared secret for a Supabase Auth JWT check). Every run also persists a row to
+`plaud.sync_runs`.
 
 ## Repo layout
 
 | path | purpose |
 |---|---|
 | `supabase/functions/plaud-sync/` | poller/archiver/retrier (cron + button) |
-| `supabase/functions/deepgram-callback/` | transcript ingest + inline Claude processing |
+| `supabase/functions/deepgram-callback/` | transcript ingest + routine fire (coalesced) |
 | `schema.sql` | reference copy of the `plaud` schema (applied via migrations) |
-| `routine-prompt.md` | prompt for the daily aggregator cloud routine |
+| `routine-prompt.md` | deployed prompt of the plaud-process cloud routine |
+| `docs/PRD.md` | product requirements (v1.1, post-critique) |
+| `docs/ui-patterns.md` | clean-room UI blueprint for the PWA |
 | `legacy-mini/` | the original Mac-mini launchd pipeline (Python) — kept as fallback |
 
 ## Costs
