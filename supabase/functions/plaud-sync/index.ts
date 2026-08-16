@@ -145,7 +145,11 @@ async function submitToDeepgram(presignedUrl: string, fileId: string, secret: st
                                 keyterms: string[] = []): Promise<string> {
   const dgKey = Deno.env.get("DEEPGRAM_API_KEY");
   if (!dgKey) throw new Error("DEEPGRAM_API_KEY not configured");
-  const cb = `${Deno.env.get("SUPABASE_URL")}/functions/v1/deepgram-callback?file_id=${fileId}&secret=${secret}`;
+  // distinct callback credential (issue #5): Deepgram stores callback URLs in
+  // its job records, so never embed the sync-invocation secret there.
+  // Falls back to the sync secret until DEEPGRAM_CALLBACK_SECRET is set.
+  const cbSecret = Deno.env.get("DEEPGRAM_CALLBACK_SECRET") ?? secret;
+  const cb = `${Deno.env.get("SUPABASE_URL")}/functions/v1/deepgram-callback?file_id=${fileId}&secret=${cbSecret}`;
   const qs = new URLSearchParams({
     model: "nova-3",
     smart_format: "true",
@@ -164,6 +168,34 @@ async function submitToDeepgram(presignedUrl: string, fileId: string, secret: st
   });
   if (!resp.ok) throw new Error(`Deepgram ${resp.status}: ${(await resp.text()).slice(0, 200)}`);
   return (await resp.json()).request_id ?? "unknown";
+}
+
+// Fallback sweep (issue #3 / PIPE-9): the callback's routine fire is
+// fire-and-forget; if it fails or the daily cap was hit, rows strand at
+// 'transcribed' until the NEXT recording arrives — unless we fire here.
+async function fireRoutine(context: string): Promise<string> {
+  const token = Deno.env.get("ROUTINE_FIRE_TOKEN");
+  if (!token) return "skipped: ROUTINE_FIRE_TOKEN not set";
+  try {
+    const resp = await fetch(
+      "https://api.anthropic.com/v1/claude_code/routines/trig_01D5qhb3VPougC2H6BnpXMED/fire",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "anthropic-beta": "experimental-cc-routine-2026-04-01",
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ text: context }),
+      },
+    );
+    const body = await resp.json().catch(() => ({}));
+    if (!resp.ok) return `fire failed ${resp.status}: ${JSON.stringify(body).slice(0, 150)}`;
+    return body.claude_code_session_url ?? "fired";
+  } catch (e) {
+    return `fire error: ${String(e).slice(0, 150)}`;
+  }
 }
 
 Deno.serve(async (req) => {
@@ -284,11 +316,23 @@ Deno.serve(async (req) => {
       }
     }
 
-    // rows at status='transcribed' are picked up by the Claude cloud routine
-    const [{ count: awaiting }] = await sql`select count(*)::int as count
+    // rows at status='transcribed' are picked up by the Claude cloud routine;
+    // if the oldest has waited >15 min the callback's fire was lost — re-fire.
+    const [{ count: awaiting, oldest_s: oldestS }] = await sql`
+      select count(*)::int as count,
+             coalesce(extract(epoch from (now() - min(updated_at)))::int, 0) as oldest_s
       from plaud.recordings where status = 'transcribed'`;
+    let routineFired = "not needed";
+    if (awaiting > 0 && oldestS > 900) {
+      routineFired = await fireRoutine(
+        `Fallback sweep: ${awaiting} transcript(s) awaiting processing in plaud.recordings (oldest ${Math.round(oldestS / 60)} min). Sweep status='transcribed'.`,
+      );
+    }
 
-    return json({ ok: true, listed: listed.length, awaiting_routine: awaiting, ...stats });
+    const result = { ok: true, listed: listed.length, awaiting_routine: awaiting, routine_fired: routineFired, ...stats };
+    await sql`insert into plaud.sync_runs (listed, submitted, skipped_short, archive_skipped, backfilled, resubmitted, awaiting_routine, routine_fired, errors)
+      values (${listed.length}, ${stats.submitted}, ${stats.skipped_short}, ${stats.archive_skipped}, ${stats.backfilled}, ${stats.resubmitted}, ${awaiting}, ${routineFired}, ${JSON.stringify(stats.errors)}::jsonb)`;
+    return json(result);
   } catch (e) {
     return json({ ok: false, error: String(e).slice(0, 500), ...stats }, 500);
   } finally {
