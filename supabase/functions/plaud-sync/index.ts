@@ -28,6 +28,51 @@ const json = (body: unknown, status = 200) =>
     headers: { "content-type": "application/json" },
   });
 
+/** Archive audio to Storage without holding the file in worker memory.
+ * 1) streaming pass-through (any size, bounded memory)
+ * 2) buffered fallback for files under ARCHIVE_MAX_BYTES
+ * Returns bytes stored, or null if archiving wasn't possible (e.g. Storage
+ * per-file limit — raise it in dashboard Storage settings). */
+async function archiveAudio(
+  presignedUrl: string,
+  storagePath: string,
+  size: number,
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
+): Promise<number | null> {
+  const src = await fetch(presignedUrl);
+  if (!src.ok || !src.body) throw new Error(`audio download ${src.status}`);
+  const streamed = await fetch(
+    `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/plaud-audio/${storagePath}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+        "Content-Type": "audio/mpeg",
+        "x-upsert": "true",
+      },
+      body: src.body,
+      // @ts-ignore: Deno requires duplex for streaming request bodies
+      duplex: "half",
+    },
+  );
+  if (streamed.ok) return size || null;
+  await streamed.body?.cancel();
+
+  if (size && size > ARCHIVE_MAX_BYTES) return null; // too big to buffer
+  const retry = await fetch(presignedUrl);
+  if (!retry.ok) throw new Error(`audio download ${retry.status}`);
+  const buf = new Uint8Array(await retry.arrayBuffer());
+  const { error: upErr } = await supabase.storage
+    .from("plaud-audio")
+    .upload(storagePath, buf, { contentType: "audio/mpeg", upsert: true });
+  if (upErr) {
+    if (/exceeded the maximum allowed size/i.test(upErr.message)) return null;
+    throw new Error(`storage upload: ${upErr.message}`);
+  }
+  return buf.byteLength;
+}
+
 function toDate(v: unknown): Date | null {
   if (v == null) return null;
   if (typeof v === "number") return new Date(v > 1e12 ? v : v * 1000);
@@ -131,7 +176,7 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
-  const stats = { submitted: 0, skipped_short: 0, archive_skipped: 0, resubmitted: 0, errors: [] as string[] };
+  const stats = { submitted: 0, skipped_short: 0, archive_skipped: 0, backfilled: 0, resubmitted: 0, errors: [] as string[] };
 
   try {
     const [{ locked }] = await sql`select pg_try_advisory_lock(873429) as locked`;
@@ -173,30 +218,10 @@ Deno.serve(async (req) => {
 
         const storagePath = `${day}/${rec.id}.mp3`;
         const size = await probeSize(detail.presigned_url);
-        let audioPath: string | null = null;
-        let audioBytes: number | null = size || null;
-        if (size > ARCHIVE_MAX_BYTES) {
-          // too big to buffer through the worker or store under the Storage
-          // limit — transcription still happens (Deepgram pulls the URL)
-          stats.archive_skipped++;
-        } else {
-          const audioResp = await fetch(detail.presigned_url);
-          if (!audioResp.ok) throw new Error(`audio download ${audioResp.status}`);
-          const audioBuf = new Uint8Array(await audioResp.arrayBuffer());
-          const { error: upErr } = await supabase.storage
-            .from("plaud-audio")
-            .upload(storagePath, audioBuf, { contentType: "audio/mpeg", upsert: true });
-          if (upErr) {
-            if (/exceeded the maximum allowed size/i.test(upErr.message)) {
-              stats.archive_skipped++;
-            } else {
-              throw new Error(`storage upload: ${upErr.message}`);
-            }
-          } else {
-            audioPath = storagePath;
-            audioBytes = audioBuf.byteLength;
-          }
-        }
+        const storedBytes = await archiveAudio(detail.presigned_url, storagePath, size, supabase);
+        const audioPath = storedBytes != null ? storagePath : null;
+        const audioBytes = storedBytes ?? (size || null);
+        if (storedBytes == null) stats.archive_skipped++;
 
         const requestId = await submitToDeepgram(detail.presigned_url, rec.id, secret, keyterms);
         await sql`insert into plaud.recordings (id, name, serial_number, started_at, created_at, duration_ms,
@@ -232,6 +257,30 @@ Deno.serve(async (req) => {
         stats.resubmitted++;
       } catch (e) {
         stats.errors.push(`resubmit ${row.id}: ${String(e).slice(0, 200)}`);
+      }
+    }
+
+    // backfill: recordings that transcribed without an archive copy (e.g.
+    // before streaming uploads / while the Storage size limit was low)
+    const missing = await sql`select id, to_char(coalesce(started_at, created_at), 'YYYY-MM-DD') as day
+      from plaud.recordings
+      where audio_path is null and status in ('transcribed','processed')
+        and duration_ms >= ${MIN_DURATION_MS}
+      order by started_at desc limit 2`;
+    for (const row of missing) {
+      try {
+        const detail = await plaudGet(token, `/open/third-party/files/${row.id}`);
+        if (!detail.presigned_url) continue;
+        const path = `${row.day}/${row.id}.mp3`;
+        const size = await probeSize(detail.presigned_url);
+        const bytes = await archiveAudio(detail.presigned_url, path, size, supabase);
+        if (bytes != null) {
+          await sql`update plaud.recordings set audio_path = ${path}, audio_bytes = ${bytes}
+            where id = ${row.id}`;
+          stats.backfilled++;
+        }
+      } catch (e) {
+        stats.errors.push(`backfill ${row.id}: ${String(e).slice(0, 150)}`);
       }
     }
 
