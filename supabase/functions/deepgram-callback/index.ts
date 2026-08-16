@@ -63,17 +63,30 @@ function extractUtterances(body: any): Utt[] {
   return flat ? [{ speaker: null, start_ms: 0, end_ms: 0, text: flat }] : [];
 }
 
+// Mirrors plaud-sync's callbackToken: HMAC-SHA256(file_id) under the callback secret.
+async function callbackToken(fileId: string): Promise<string> {
+  const secret = Deno.env.get("DEEPGRAM_CALLBACK_SECRET") ?? Deno.env.get("PLAUD_SYNC_SECRET") ?? "";
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(fileId));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
+}
+
 Deno.serve(async (req) => {
   const secret = Deno.env.get("PLAUD_SYNC_SECRET");
   if (!secret) return json({ error: "PLAUD_SYNC_SECRET not configured" }, 500);
-  // accept the dedicated callback secret (issue #5); tolerate the legacy sync
-  // secret during transition so in-flight Deepgram jobs are not stranded
-  const cbSecret = Deno.env.get("DEEPGRAM_CALLBACK_SECRET") ?? secret;
-  const given = new URL(req.url).searchParams.get("secret");
-  if (given !== cbSecret && given !== secret) return json({ error: "unauthorized" }, 401);
   const url = new URL(req.url);
   const fileId = url.searchParams.get("file_id");
   if (!fileId) return json({ error: "file_id required" }, 400);
+  // primary auth: per-file HMAC token. Legacy static secrets stay accepted
+  // only for Deepgram jobs already in flight with old-style URLs.
+  const givenToken = url.searchParams.get("token");
+  const givenLegacy = url.searchParams.get("secret");
+  const cbSecret = Deno.env.get("DEEPGRAM_CALLBACK_SECRET") ?? secret;
+  const tokenOk = givenToken != null && givenToken === (await callbackToken(fileId));
+  const legacyOk = givenLegacy != null && (givenLegacy === cbSecret || givenLegacy === secret);
+  if (!tokenOk && !legacyOk) return json({ error: "unauthorized" }, 401);
 
   let body;
   try {

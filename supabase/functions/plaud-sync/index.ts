@@ -167,15 +167,23 @@ async function listAllRecordings(token: string): Promise<any[]> {
   return out;
 }
 
-async function submitToDeepgram(presignedUrl: string, fileId: string, secret: string,
+// Per-file callback token (issue #5): HMAC-SHA256(file_id) under the dedicated
+// callback secret. Deepgram stores callback URLs in its job records, so the
+// URL must never carry a reusable credential — only this file-scoped token.
+async function callbackToken(fileId: string): Promise<string> {
+  const secret = Deno.env.get("DEEPGRAM_CALLBACK_SECRET") ?? Deno.env.get("PLAUD_SYNC_SECRET") ?? "";
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(fileId));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
+}
+
+async function submitToDeepgram(presignedUrl: string, fileId: string, _secret: string,
                                 keyterms: string[] = []): Promise<string> {
   const dgKey = Deno.env.get("DEEPGRAM_API_KEY");
   if (!dgKey) throw new Error("DEEPGRAM_API_KEY not configured");
-  // distinct callback credential (issue #5): Deepgram stores callback URLs in
-  // its job records, so never embed the sync-invocation secret there.
-  // Falls back to the sync secret until DEEPGRAM_CALLBACK_SECRET is set.
-  const cbSecret = Deno.env.get("DEEPGRAM_CALLBACK_SECRET") ?? secret;
-  const cb = `${Deno.env.get("SUPABASE_URL")}/functions/v1/deepgram-callback?file_id=${fileId}&secret=${cbSecret}`;
+  const cb = `${Deno.env.get("SUPABASE_URL")}/functions/v1/deepgram-callback?file_id=${fileId}&token=${await callbackToken(fileId)}`;
   const qs = new URLSearchParams({
     model: "nova-3",
     smart_format: "true",
