@@ -44,6 +44,27 @@ drop trigger if exists recordings_touch on plaud.recordings;
 create trigger recordings_touch before update on plaud.recordings
   for each row execute function plaud.touch_updated_at();
 
+-- Speaker context: who Joe is + Deepgram keyterms. Edited without redeploys —
+-- the routine reads about_md each run; plaud-sync passes keyterms to Nova-3.
+create table if not exists plaud.context (
+  id         int primary key default 1 check (id = 1),
+  about_md   text not null,
+  keyterms   text[] not null default '{}',
+  updated_at timestamptz not null default now()
+);
+grant all on plaud.context to service_role;
+
+-- Plaud OAuth token custody (seeded from ~/.plaud/tokens.json after `plaud login`)
+create table if not exists plaud.credentials (
+  id            int primary key default 1 check (id = 1),
+  access_token  text not null,
+  refresh_token text not null,
+  expires_at    timestamptz,
+  status        text not null default 'ok' check (status in ('ok','reauth_required')),
+  updated_at    timestamptz not null default now()
+);
+grant all on plaud.credentials to service_role;
+
 -- lock the schema down: service-role key only (the mini + the Claude routine)
 revoke all on schema plaud from anon, authenticated;
 grant usage on schema plaud to service_role;

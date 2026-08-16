@@ -84,7 +84,8 @@ async function listAllRecordings(token: string): Promise<any[]> {
   return out;
 }
 
-async function submitToDeepgram(presignedUrl: string, fileId: string, secret: string): Promise<string> {
+async function submitToDeepgram(presignedUrl: string, fileId: string, secret: string,
+                                keyterms: string[] = []): Promise<string> {
   const dgKey = Deno.env.get("DEEPGRAM_API_KEY");
   if (!dgKey) throw new Error("DEEPGRAM_API_KEY not configured");
   const cb = `${Deno.env.get("SUPABASE_URL")}/functions/v1/deepgram-callback?file_id=${fileId}&secret=${secret}`;
@@ -96,6 +97,9 @@ async function submitToDeepgram(presignedUrl: string, fileId: string, secret: st
     callback: cb,
     callback_method: "post",
   });
+  // Nova-3 keyterm prompting: boosts recognition of Joe's domain vocabulary
+  // (editable in plaud.context.keyterms — no redeploy needed)
+  for (const term of keyterms.slice(0, 100)) qs.append("keyterm", term);
   const resp = await fetch(`https://api.deepgram.com/v1/listen?${qs}`, {
     method: "POST",
     headers: { Authorization: `Token ${dgKey}`, "content-type": "application/json" },
@@ -122,6 +126,8 @@ Deno.serve(async (req) => {
     if (!locked) return json({ skipped: "another sync is running" });
 
     const token = await getFreshToken(sql);
+    const ctxRows = await sql`select keyterms from plaud.context where id = 1`;
+    const keyterms: string[] = ctxRows[0]?.keyterms ?? [];
     const listed = await listAllRecordings(token);
     const existing = await sql`select id, status, retry_count, submitted_at from plaud.recordings`;
     // deno-lint-ignore no-explicit-any
@@ -162,7 +168,7 @@ Deno.serve(async (req) => {
           .upload(storagePath, audioBuf, { contentType: "audio/mpeg", upsert: true });
         if (upErr) throw new Error(`storage upload: ${upErr.message}`);
 
-        const requestId = await submitToDeepgram(detail.presigned_url, rec.id, secret);
+        const requestId = await submitToDeepgram(detail.presigned_url, rec.id, secret, keyterms);
         await sql`insert into plaud.recordings (id, name, serial_number, started_at, created_at, duration_ms,
             audio_path, audio_bytes, status, dg_request_id, submitted_at, error, retry_count)
           values (${rec.id}, ${rec.name}, ${rec.serial_number}, ${toDate(rec.start_at)}, ${toDate(rec.created_at)},
@@ -190,7 +196,7 @@ Deno.serve(async (req) => {
       try {
         const detail = await plaudGet(token, `/open/third-party/files/${row.id}`);
         if (!detail.presigned_url) throw new Error("no presigned_url on resubmit");
-        const requestId = await submitToDeepgram(detail.presigned_url, row.id, secret);
+        const requestId = await submitToDeepgram(detail.presigned_url, row.id, secret, keyterms);
         await sql`update plaud.recordings set dg_request_id = ${requestId}, submitted_at = now(),
           retry_count = retry_count + 1 where id = ${row.id}`;
         stats.resubmitted++;
