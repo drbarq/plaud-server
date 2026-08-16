@@ -8,6 +8,18 @@ const PLAUD_API = "https://platform.plaud.ai/developer/api";
 const MIN_DURATION_MS = 4000;
 const MAX_RETRIES = 5;
 const BATCH = 5;
+// Files above this skip the Storage archive (edge worker memory + Storage
+// file-size limits) — they still transcribe: Deepgram fetches the URL itself.
+const ARCHIVE_MAX_BYTES = Number(Deno.env.get("ARCHIVE_MAX_BYTES") ?? 45_000_000);
+
+async function probeSize(url: string): Promise<number> {
+  // presigned URLs are signed for GET, so HEAD fails — use a 1-byte range GET
+  const resp = await fetch(url, { headers: { Range: "bytes=0-0" } });
+  await resp.body?.cancel();
+  const range = resp.headers.get("content-range"); // "bytes 0-0/12345678"
+  if (range?.includes("/")) return Number(range.split("/")[1]) || 0;
+  return Number(resp.headers.get("content-length") ?? 0);
+}
 const STALE_MS = 30 * 60 * 1000;
 
 const json = (body: unknown, status = 200) =>
@@ -119,7 +131,7 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
-  const stats = { submitted: 0, skipped_short: 0, resubmitted: 0, errors: [] as string[] };
+  const stats = { submitted: 0, skipped_short: 0, archive_skipped: 0, resubmitted: 0, errors: [] as string[] };
 
   try {
     const [{ locked }] = await sql`select pg_try_advisory_lock(873429) as locked`;
@@ -160,19 +172,37 @@ Deno.serve(async (req) => {
         if (!detail.presigned_url) throw new Error("no presigned_url in file detail");
 
         const storagePath = `${day}/${rec.id}.mp3`;
-        const audioResp = await fetch(detail.presigned_url);
-        if (!audioResp.ok) throw new Error(`audio download ${audioResp.status}`);
-        const audioBuf = new Uint8Array(await audioResp.arrayBuffer());
-        const { error: upErr } = await supabase.storage
-          .from("plaud-audio")
-          .upload(storagePath, audioBuf, { contentType: "audio/mpeg", upsert: true });
-        if (upErr) throw new Error(`storage upload: ${upErr.message}`);
+        const size = await probeSize(detail.presigned_url);
+        let audioPath: string | null = null;
+        let audioBytes: number | null = size || null;
+        if (size > ARCHIVE_MAX_BYTES) {
+          // too big to buffer through the worker or store under the Storage
+          // limit — transcription still happens (Deepgram pulls the URL)
+          stats.archive_skipped++;
+        } else {
+          const audioResp = await fetch(detail.presigned_url);
+          if (!audioResp.ok) throw new Error(`audio download ${audioResp.status}`);
+          const audioBuf = new Uint8Array(await audioResp.arrayBuffer());
+          const { error: upErr } = await supabase.storage
+            .from("plaud-audio")
+            .upload(storagePath, audioBuf, { contentType: "audio/mpeg", upsert: true });
+          if (upErr) {
+            if (/exceeded the maximum allowed size/i.test(upErr.message)) {
+              stats.archive_skipped++;
+            } else {
+              throw new Error(`storage upload: ${upErr.message}`);
+            }
+          } else {
+            audioPath = storagePath;
+            audioBytes = audioBuf.byteLength;
+          }
+        }
 
         const requestId = await submitToDeepgram(detail.presigned_url, rec.id, secret, keyterms);
         await sql`insert into plaud.recordings (id, name, serial_number, started_at, created_at, duration_ms,
             audio_path, audio_bytes, status, dg_request_id, submitted_at, error, retry_count)
           values (${rec.id}, ${rec.name}, ${rec.serial_number}, ${toDate(rec.start_at)}, ${toDate(rec.created_at)},
-            ${rec.duration}, ${storagePath}, ${audioBuf.byteLength}, 'downloaded', ${requestId}, now(), null, ${retryCount})
+            ${rec.duration}, ${audioPath}, ${audioBytes}, 'downloaded', ${requestId}, now(), null, ${retryCount})
           on conflict (id) do update set
             audio_path = excluded.audio_path, audio_bytes = excluded.audio_bytes,
             status = 'downloaded', dg_request_id = excluded.dg_request_id,
