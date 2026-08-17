@@ -16,3 +16,8 @@ node_modules/
 
 # macOS
 .DS_Store
+
+# PoC — the whole folder stays out of the public repo: not just data/ and
+# explorer/, but the extraction spec and handoff also embed personal speaker
+# calibration (job details, people, personal registers)
+poc/

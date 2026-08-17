@@ -88,6 +88,58 @@ create table if not exists plaud.credentials (
 );
 grant all on plaud.credentials to service_role;
 
+-- Thread layer: a memo is threads of consciousness, not a chunk. Extracted by
+-- the plaud-process routine (source='routine'; sentence_ids index into
+-- recordings.transcript utterances). Rows imported from the Aug 2026 PoC use
+-- source='poc' (their sentence_ids reference the PoC's own split — spans_ms
+-- is the always-valid reference). Embeddings: gte-small over label + ". " +
+-- summary_line, filled by the thread-embed function on cron.
+create table if not exists plaud.threads (
+  id            bigint generated always as identity primary key,
+  recording_id  text not null references plaud.recordings(id) on delete cascade,
+  key           text not null,               -- T1, T2… unique per recording
+  label         text not null,
+  summary_line  text,
+  sentence_ids  int[] not null,
+  spans_ms      jsonb,                       -- [[start,end],…] resurfacing = >1 span
+  entities      text[] not null default '{}',
+  action_items  jsonb not null default '[]',
+  content_idea  boolean not null default false,
+  idea_note     text,
+  source        text not null default 'routine' check (source in ('routine','poc')),
+  embedding     extensions.vector(384),
+  created_at    timestamptz not null default now(),
+  unique (recording_id, key)
+);
+create index if not exists threads_embedding_idx on plaud.threads using hnsw (embedding extensions.vector_cosine_ops);
+create index if not exists threads_entities_idx on plaud.threads using gin (entities);
+create index if not exists threads_recording_idx on plaud.threads (recording_id);
+
+-- Cross-recording links: cosine >= 0.86, or >= 0.80 with a shared rare entity
+-- (global count <= 4), top 3 per thread. Thresholds recalibrated for gte-small
+-- on label+summary text (PoC's 0.42/0.32 were MiniLM-on-full-text values).
+create table if not exists plaud.thread_links (
+  a bigint references plaud.threads(id) on delete cascade,
+  b bigint references plaud.threads(id) on delete cascade,
+  sim real not null,
+  shared_entities text[] not null default '{}',
+  primary key (a, b)
+);
+
+-- STT-correction feedback loop: routine logs manglings it fixed; reviewed
+-- ones graduate into plaud.context.keyterms
+create table if not exists plaud.stt_corrections (
+  id           bigint generated always as identity primary key,
+  recording_id text references plaud.recordings(id) on delete set null,
+  heard        text not null,
+  canonical    text not null,
+  created_at   timestamptz not null default now(),
+  reviewed     boolean not null default false,
+  unique (heard, canonical)
+);
+
+grant all on plaud.threads, plaud.thread_links, plaud.stt_corrections to service_role;
+
 -- lock the schema down: service-role key only (the mini + the Claude routine)
 revoke all on schema plaud from anon, authenticated;
 grant usage on schema plaud to service_role;
