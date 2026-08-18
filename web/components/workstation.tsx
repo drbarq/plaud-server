@@ -11,6 +11,7 @@ import { HealthBanner } from "./health-banner";
 import { SyncButton } from "./sync-button";
 import { IdeasList } from "./ideas-list";
 import { MindPlate } from "./mind-plate";
+import { SemanticResults, useSemanticSearch } from "./semantic-results";
 import { usePlayback } from "./use-playback";
 
 export type SortMode = "newest" | "oldest";
@@ -25,6 +26,7 @@ export function Workstation({ recordings, health, links }: { recordings: Recordi
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortMode>("newest");
   const playback = usePlayback();
+  const semantic = useSemanticSearch(tab === "memos" ? query : "");
 
   useEffect(() => {
     const onVisible = () => {
@@ -137,6 +139,7 @@ export function Workstation({ recordings, health, links }: { recordings: Recordi
               total={recordings.length}
               onEnter={() => filtered[0] && select(filtered[0].id)}
             />
+            <SemanticResults results={semantic.results} loading={semantic.loading} onOpen={select} />
             <RecordingList
               recordings={filtered}
               selectedId={selectedId}
