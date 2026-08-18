@@ -3,19 +3,10 @@
 import { BUCKETS, type Bucket } from "@/lib/types";
 import type { SortMode } from "./workstation";
 
-const CHIP_LABEL: Record<Bucket, string> = {
-  journal: "journal",
-  idea: "idea",
-  task: "task",
-  meeting: "meeting",
-  "project-note": "project",
-  reference: "ref",
-  misc: "misc",
-};
-
 export function Toolbar(props: {
   bucket: Bucket | "all";
   onBucket: (b: Bucket | "all") => void;
+  counts: Record<string, number>;
   query: string;
   onQuery: (q: string) => void;
   sort: SortMode;
@@ -24,80 +15,78 @@ export function Toolbar(props: {
   total: number;
   onEnter: () => void;
 }) {
-  const { bucket, onBucket, query, onQuery, sort, onSort, shown, total, onEnter } = props;
+  const { bucket, onBucket, counts, query, onQuery, sort, onSort, shown, total, onEnter } = props;
   return (
-    <div className="shrink-0 border-b border-hairline">
-      {/* bucket chips — primary navigation, thumb-scrollable */}
-      <div className="flex gap-1.5 overflow-x-auto px-3 pt-3 pb-2 [scrollbar-width:none]">
-        <Chip active={bucket === "all"} onClick={() => onBucket("all")} label="all" />
+    <div className="shrink-0">
+      {/* search — v2 underline style */}
+      <div className="px-[18px] pb-3 pt-1">
+        <div className="flex items-center gap-2 pb-2" style={{ borderBottom: "1px solid var(--hairline-strong)" }}>
+          <span className="text-[11px]" style={{ color: "var(--ink-mute)" }}>⌕</span>
+          <input
+            value={query}
+            onChange={(e) => onQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && onEnter()}
+            placeholder="SEARCH TRANSCRIPTS, THREADS, ENTITIES"
+            className="mono flex-1 bg-transparent text-[10px] tracking-[0.1em] uppercase outline-none"
+            style={{ color: "var(--ink-body)" }}
+          />
+          {query ? (
+            <button onClick={() => onQuery("")} className="mono text-[10px]" style={{ color: "var(--ink-mute)" }} aria-label="Clear search">
+              ✕
+            </button>
+          ) : (
+            <button
+              onClick={() => onSort(sort === "newest" ? "oldest" : "newest")}
+              className="mono text-[9px] tracking-[0.1em]"
+              style={{ color: "var(--ink-faint)" }}
+            >
+              {sort === "newest" ? "↓" : "↑"}
+            </button>
+          )}
+          <span className="mono text-[9px]" style={{ color: "var(--ink-faint)" }}>
+            {shown}/{total}
+          </span>
+        </div>
+      </div>
+
+      {/* bucket chips */}
+      <div className="flex gap-[7px] overflow-x-auto px-[18px] pt-1 pb-4 [scrollbar-width:none]">
+        <Chip active={bucket === "all"} onClick={() => onBucket("all")} label="ALL" count={total} />
         {BUCKETS.map((b) => (
           <Chip
             key={b}
             active={bucket === b}
             onClick={() => onBucket(bucket === b ? "all" : b)}
-            label={CHIP_LABEL[b]}
+            label={b.toUpperCase()}
+            count={counts[b] ?? 0}
             bucket={b}
           />
         ))}
       </div>
-
-      <div className="flex items-center gap-2 px-3 pb-3">
-        <div className="relative flex-1">
-          <input
-            value={query}
-            onChange={(e) => onQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && onEnter()}
-            placeholder="Search titles, tags, summaries…"
-            className="w-full bg-inset border border-hairline rounded-lg pl-3 pr-8 py-2 mono text-[13px] outline-none focus:border-accent placeholder:text-faint"
-          />
-          {query && (
-            <button
-              onClick={() => onQuery("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-dim hover:text-ink mono text-xs"
-              aria-label="Clear search"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-        <button
-          onClick={() => onSort(sort === "newest" ? "oldest" : "newest")}
-          className="mono text-[11px] uppercase tracking-wide text-dim hover:text-ink whitespace-nowrap"
-        >
-          {sort === "newest" ? "newest ↓" : "oldest ↑"}
-        </button>
-      </div>
-
-      <p className="mono text-[10px] uppercase tracking-[0.14em] text-faint px-3 pb-2">
-        {shown === total ? `${total} recordings` : `${shown} of ${total}`}
-      </p>
     </div>
   );
 }
 
 function Chip({
-  active,
-  onClick,
-  label,
-  bucket,
+  active, onClick, label, count, bucket,
 }: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  bucket?: Bucket;
+  active: boolean; onClick: () => void; label: string; count: number; bucket?: Bucket;
 }) {
   return (
     <button
       onClick={onClick}
       data-bucket={bucket}
-      className={`shrink-0 mono text-[11px] uppercase tracking-wide rounded-full px-3 py-1.5 border transition-colors ${
-        active
-          ? "border-accent text-ink bg-raised"
-          : "border-hairline text-dim hover:text-ink"
-      }`}
+      className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] transition-colors"
+      style={{
+        border: `1px solid ${active ? "oklch(0.502 0.016 73)" : "var(--hairline-chip)"}`,
+        background: active ? "var(--bg-chip-active)" : "transparent",
+      }}
     >
-      {bucket && <span className="bucket-dot inline-block size-1.5 rounded-full mr-1.5 align-middle" />}
-      {label}
+      <span className="size-[5px] rounded-full" style={{ background: bucket ? "var(--bucket)" : "var(--ink)" }} />
+      <span className="mono text-[9px] font-medium tracking-[0.15em]" style={{ color: active ? "var(--ink-title)" : "oklch(0.64 0.016 76)" }}>
+        {label}
+      </span>
+      <span className="mono text-[9px]" style={{ color: "var(--ink-faint)" }}>{count}</span>
     </button>
   );
 }

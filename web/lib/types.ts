@@ -28,6 +28,8 @@ export interface ThreadLite {
   label: string;
   spans: ThreadSpan[];
   contentIdea: boolean;
+  ideaNote: string | null;
+  entities: string[];
 }
 
 export interface Recording {
@@ -48,8 +50,11 @@ export interface Recording {
 export interface ThreadLink {
   sim: number;
   otherLabel: string;
+  otherSummaryLine: string | null;
   otherRecordingId: string;
   otherRecordingTitle: string | null;
+  otherStartedAt: string | null;
+  sharedEntities: string[];
 }
 
 export interface ThreadFull {
@@ -120,6 +125,8 @@ export function toRecording(row: Row, threads: Row[]): Recording {
       label: t.label,
       spans: coerceSpans(t.spans_ms),
       contentIdea: !!t.content_idea,
+      ideaNote: t.idea_note || null,
+      entities: Array.isArray(t.entities) ? t.entities : [],
     })),
   };
 }
@@ -139,8 +146,11 @@ export function toThreadFull(row: Row, links: Row[]): ThreadFull {
     links: links.map((l) => ({
       sim: Number(l.sim),
       otherLabel: l.other_label,
+      otherSummaryLine: l.other_summary_line || null,
       otherRecordingId: l.other_recording_id,
       otherRecordingTitle: l.other_recording_title || null,
+      otherStartedAt: l.other_started_at ? new Date(l.other_started_at).toISOString() : null,
+      sharedEntities: Array.isArray(l.shared_entities) ? l.shared_entities : [],
     })),
   };
 }

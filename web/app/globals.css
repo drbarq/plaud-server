@@ -1,42 +1,65 @@
 @import "tailwindcss";
 
-/* ————— Threads: field-journal instrument panel —————
-   Dark-first warm charcoal; paper-cream text; amber REC accent.
-   Light theme via prefers-color-scheme (inverse: warm paper). */
+/* ————— Threads v2: warm-paper field instrument (light-only) —————
+   Spec: design/threads-v2.dc.html digest. Newsreader italic display,
+   IBM Plex Mono instrumentation, one amber accent. */
 
 :root {
-  --bg: oklch(0.16 0.012 70);
-  --bg-raised: oklch(0.20 0.014 70);
-  --bg-inset: oklch(0.13 0.010 70);
-  --ink: oklch(0.93 0.015 85);
-  --ink-dim: oklch(0.70 0.015 80);
-  --ink-faint: oklch(0.50 0.012 75);
-  --hairline: oklch(0.32 0.014 70);
-  --accent: oklch(0.78 0.16 65);          /* REC amber */
-  --accent-ink: oklch(0.18 0.03 65);
-  --danger: oklch(0.65 0.19 25);
+  --bg:         oklch(0.976 0.010 86);
+  --bg-raised:  oklch(0.958 0.012 85);
+  --bg-inset:   oklch(0.948 0.016 84);
+  --bg-hover:   oklch(0.925 0.020 82);
+  --bg-selected: oklch(0.906 0.026 81);
+  --bg-row-selected: oklch(0.912 0.022 81);
+  --bg-chip-active: oklch(0.935 0.020 83);
+  --bg-tx-active: oklch(0.906 0.030 80);
+  --bg-idea-card: oklch(0.962 0.014 85);
+  --bg-echo-b: oklch(0.945 0.022 83);
+  --bg-player: oklch(0.968 0.012 85 / 0.96);
+  --bg-scrim:  oklch(0.902 0.020 84 / 0.88);
 
-  --b-journal: oklch(0.78 0.14 65);
-  --b-idea: oklch(0.82 0.17 125);
-  --b-task: oklch(0.78 0.12 210);
-  --b-meeting: oklch(0.74 0.13 300);
-  --b-project-note: oklch(0.75 0.13 40);
-  --b-reference: oklch(0.78 0.11 175);
-  --b-misc: oklch(0.60 0.01 70);
-}
+  --ink:        oklch(0.235 0.022 62);
+  --ink-strong: oklch(0.200 0.024 60);
+  --ink-title:  oklch(0.215 0.022 61);
+  --ink-body:   oklch(0.262 0.020 63);
+  --ink-sum:    oklch(0.452 0.018 70);
+  --ink-snippet: oklch(0.492 0.018 72);
+  --ink-label:  oklch(0.420 0.020 68);
+  --ink-dim:    oklch(0.502 0.016 72);
+  --ink-meta:   oklch(0.542 0.016 74);
+  --ink-mute:   oklch(0.572 0.016 75);
+  --ink-idx:    oklch(0.602 0.015 76);
+  --ink-faint:  oklch(0.642 0.014 77);
+  --ink-tick:   oklch(0.672 0.014 78);
+  --ink-ghost:  oklch(0.692 0.014 78);
+  --ink-tx:     oklch(0.532 0.017 73);
+  --ink-tx-t:   oklch(0.662 0.014 77);
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: oklch(0.965 0.008 85);
-    --bg-raised: oklch(0.99 0.005 85);
-    --bg-inset: oklch(0.93 0.010 85);
-    --ink: oklch(0.22 0.015 70);
-    --ink-dim: oklch(0.45 0.015 70);
-    --ink-faint: oklch(0.62 0.012 75);
-    --hairline: oklch(0.86 0.012 80);
-    --accent: oklch(0.62 0.15 60);
-    --accent-ink: oklch(0.98 0.01 85);
-  }
+  --hairline:        oklch(0.846 0.014 82);
+  --hairline-strong: oklch(0.806 0.016 81);
+  --hairline-panel:  oklch(0.836 0.015 81);
+  --hairline-row:    oklch(0.855 0.014 82);
+  --hairline-chip:   oklch(0.826 0.015 81);
+  --border-surface:  oklch(0.782 0.016 80);
+  --control-line:    oklch(0.752 0.016 80);
+  --wave-off:        oklch(0.756 0.016 80);
+  --scroll-thumb:    oklch(0.772 0.016 80);
+  --tx-rule:         oklch(0.860 0.014 82);
+
+  --accent:       oklch(0.575 0.200 47);
+  --accent-hover: oklch(0.455 0.160 52);
+  --accent-ink:   oklch(0.985 0.010 88);
+  --idea:         oklch(0.520 0.150 128);
+  --danger:       oklch(0.540 0.190 34);
+  --danger-ink:   oklch(0.500 0.170 36);
+
+  --b-journal:      oklch(0.60 0.15 68);
+  --b-idea:         oklch(0.52 0.15 128);
+  --b-task:         oklch(0.50 0.13 222);
+  --b-meeting:      oklch(0.46 0.16 300);
+  --b-project-note: oklch(0.55 0.16 42);
+  --b-reference:    oklch(0.50 0.11 178);
+  --b-misc:         oklch(0.58 0.012 70);
 }
 
 @theme inline {
@@ -54,33 +77,25 @@
   --font-mono: var(--font-plex-mono);
 }
 
-html, body {
-  background: var(--bg);
-  color: var(--ink);
-  height: 100%;
-}
+html, body { background: var(--bg); color: var(--ink); height: 100%; }
 
 body {
   font-family: var(--font-newsreader), Georgia, serif;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
+  text-wrap: pretty;
 }
 
-/* film-grain atmosphere */
+/* film grain — v2: multiply blend, denser noise */
 body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 50;
-  opacity: 0.05;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 90;
+  mix-blend-mode: multiply; opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 .mono {
   font-family: var(--font-plex-mono), ui-monospace, monospace;
   font-feature-settings: "tnum";
-  letter-spacing: 0.01em;
 }
 
 .bucket-dot { background: var(--bucket, var(--b-misc)); }
@@ -93,32 +108,44 @@ body::before {
 [data-bucket="reference"] { --bucket: var(--b-reference); }
 [data-bucket="misc"] { --bucket: var(--b-misc); }
 
-/* staggered load reveal */
-@keyframes rise {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
-}
-.rise { animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+/* section header: label · rule · count */
+.rule-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.rule-row .rr-label { font: 500 9px/1 var(--font-plex-mono), monospace; letter-spacing: 0.22em; color: var(--ink-label); text-transform: uppercase; flex-shrink: 0; }
+.rule-row .rr-rule { flex: 1; height: 1px; background: var(--hairline-chip); }
+.rule-row .rr-count { font: 400 9px/1 var(--font-plex-mono), monospace; letter-spacing: 0.14em; color: var(--ink-faint); text-transform: uppercase; flex-shrink: 0; }
+.rule-row.accent .rr-label { color: var(--accent); }
+.rule-row.accent .rr-rule { background: oklch(0.575 0.200 47 / 0.30); }
 
-@keyframes rec-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+/* similarity tick meter */
+.sim-ticks { display: inline-flex; gap: 2px; align-items: center; }
+.sim-ticks i { width: 2px; height: 7px; background: var(--control-line); }
+.sim-ticks i.on { background: var(--accent); }
+
+@keyframes recpulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 oklch(0.575 0.200 47 / 0.50); }
+  50% { opacity: 0.42; box-shadow: 0 0 9px 2px oklch(0.575 0.200 47 / 0.14); }
 }
-.rec-pulse { animation: rec-pulse 1.1s ease-in-out infinite; }
+@keyframes fadeup { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+@keyframes shimmer { 0%, 100% { opacity: 0.22; } 50% { opacity: 0.55; } }
+@keyframes echoin { from { opacity: 0; transform: translateY(16px) scale(0.985); } to { opacity: 1; transform: none; } }
+@keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes drift { from { opacity: 0; } to { opacity: 1; } }
+
+.rise { animation: fadeup 0.55s cubic-bezier(0.2, 0.75, 0.2, 1) both; }
+.rec-pulse { animation: recpulse 2.4s ease-in-out infinite; }
+.rec-pulse-fast { animation: recpulse 1.1s ease-in-out infinite; }
 
 /* summary prose */
-.prose-memo { line-height: 1.55; font-size: 1.02rem; }
+.prose-memo { line-height: 1.6; font-size: 14px; font-weight: 300; color: var(--ink-sum); max-width: 62ch; }
 .prose-memo p { margin: 0.5em 0; }
 .prose-memo h2, .prose-memo h3 {
-  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em;
-  color: var(--ink-dim); margin: 1.1em 0 0.3em;
-  font-family: var(--font-plex-mono), monospace;
+  font: 500 9px/1 var(--font-plex-mono), monospace; text-transform: uppercase;
+  letter-spacing: 0.22em; color: var(--ink-label); margin: 1.3em 0 0.5em;
 }
 .prose-memo ul { padding-left: 1.1em; list-style: disc; }
-.prose-memo li { margin: 0.2em 0; }
-.prose-memo strong { color: var(--ink); }
+.prose-memo li { margin: 0.25em 0; }
+.prose-memo strong { color: var(--ink); font-weight: 500; }
 
 ::selection { background: var(--accent); color: var(--accent-ink); }
 
-/* thin scrollbars that match */
-* { scrollbar-width: thin; scrollbar-color: var(--hairline) transparent; }
+* { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }

@@ -12,7 +12,7 @@ export async function listRecordings(): Promise<Recording[]> {
     order by started_at desc nulls last`;
 
   const threadRows = await sql`
-    select recording_id, key, label, spans_ms, content_idea
+    select recording_id, key, label, spans_ms, content_idea, idea_note, entities
     from plaud.threads order by recording_id, key`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const byRecording = new Map<string, any[]>();

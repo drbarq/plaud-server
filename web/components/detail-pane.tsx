@@ -10,12 +10,16 @@ import { Transcript } from "./transcript";
 
 export function DetailPane({
   recording,
+  recordings,
   playback,
   onBack,
+  onOpenRecording,
 }: {
   recording: Recording | null;
+  recordings: Recording[];
   playback: Playback;
   onBack: () => void;
+  onOpenRecording: (id: string) => void;
 }) {
   const [detail, setDetail] = useState<RecordingDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -44,48 +48,50 @@ export function DetailPane({
     return (
       <div className="h-full grid place-items-center px-8 text-center">
         <div>
-          <p className="text-2xl italic text-dim">Select a recording</p>
-          <p className="mono text-xs text-faint mt-3 max-w-xs">
-            Threads of consciousness, indexed. Pick one from the list.
+          <p className="text-2xl italic" style={{ color: "oklch(0.340 0.020 66)" }}>Select a recording</p>
+          <p className="mono text-[9px] uppercase tracking-[0.16em] mt-3" style={{ color: "var(--ink-faint)" }}>
+            THREADS OF CONSCIOUSNESS, INDEXED
           </p>
         </div>
       </div>
     );
   }
 
+  const memoIdx = recordings.findIndex((r) => r.id === recording.id);
+
   const dateLine = recording.startedAt
-    ? new Date(recording.startedAt).toLocaleString("en-US", {
-        weekday: "long", month: "long", day: "numeric",
-        hour: "numeric", minute: "2-digit",
-      })
+    ? new Date(recording.startedAt)
+        .toLocaleString("en-US", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: false })
+        .toUpperCase()
     : "";
 
   return (
     <article className="max-w-3xl mx-auto px-4 lg:px-8 py-5 pb-28" data-bucket={recording.bucket}>
-      <button
-        onClick={onBack}
-        className="lg:hidden mono text-xs uppercase tracking-[0.14em] text-dim hover:text-ink mb-4"
-      >
-        ← Recordings
-      </button>
+      <div className="flex items-center gap-3 -mx-1 mb-4 pb-3" style={{ borderBottom: "1px solid var(--hairline)" }}>
+        <button onClick={onBack} className="lg:hidden mono text-[12px] px-1" style={{ color: "oklch(0.340 0.020 66)" }}>
+          ←
+        </button>
+        <span className="mono text-[9px] tracking-[0.18em] flex-1" style={{ color: "var(--ink-idx)" }}>
+          {memoIdx >= 0 ? `MEMO ${String(memoIdx + 1).padStart(2, "0")} / ${String(recordings.length).padStart(2, "0")}` : ""}
+        </span>
+        <span className="flex items-center gap-1.5 px-2 py-1" style={{ border: "1px solid var(--bucket, var(--b-misc))" }}>
+          <span className="bucket-dot size-1 rounded-full" />
+          <span className="mono text-[9px] font-medium tracking-[0.16em] uppercase bucket-ink">{recording.bucket}</span>
+        </span>
+      </div>
 
       <header className="rise">
-        <div className="mono text-[10px] uppercase tracking-[0.16em] text-faint flex items-center gap-2">
-          <span className="bucket-dot size-1.5 rounded-full" />
-          <span className="bucket-ink">{recording.bucket}</span>
-          <span>·</span>
-          <span>{dateLine}</span>
-          <span>·</span>
-          <span>{fmtMs(recording.durationMs)}</span>
-        </div>
-        <h1 className="text-[1.7rem] leading-tight italic mt-2">
+        <p className="mono text-[9px] tracking-[0.18em] uppercase mb-3" style={{ color: "oklch(0.520 0.016 73)" }}>
+          {dateLine} · {fmtMs(recording.durationMs)}
+        </p>
+        <h1 className="text-[25px] lg:text-[30px] leading-[1.24] italic font-light" style={{ color: "var(--ink-strong)", letterSpacing: "-0.012em" }}>
           {recording.title ?? recording.name}
         </h1>
         {recording.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3">
+          <div className="flex flex-wrap gap-2 mt-3.5">
             {recording.tags.map((t) => (
-              <span key={t} className="mono text-[10px] uppercase tracking-wide text-dim border border-hairline rounded-full px-2 py-0.5">
-                {t}
+              <span key={t} className="mono text-[8px] uppercase tracking-[0.14em]" style={{ color: "var(--ink-meta)" }}>
+                #{t}
               </span>
             ))}
           </div>
@@ -105,21 +111,21 @@ export function DetailPane({
 
           {detail.actionItems.length > 0 && (
             <section className="rise" style={{ animationDelay: "110ms" }}>
-              <SectionRule label="Action items" />
+              <SectionRule label="Action items" count={`${detail.actionItems.filter((a) => !a.done).length} OPEN`} />
               <ActionItems detail={detail} onLocalChange={setDetail} />
             </section>
           )}
 
           {detail.threads.length > 0 && (
             <section className="rise" style={{ animationDelay: "160ms" }}>
-              <SectionRule label={`Threads · ${detail.threads.length}`} />
-              <ThreadList threads={detail.threads} playback={playback} durationMs={recording.durationMs} />
+              <SectionRule label="Threads of consciousness" count={`${detail.threads.length} THREADS`} />
+              <ThreadList threads={detail.threads} playback={playback} durationMs={recording.durationMs} thisStartedAt={recording.startedAt} onOpenRecording={onOpenRecording} />
             </section>
           )}
 
           {detail.transcript.length > 0 && (
             <section className="rise" style={{ animationDelay: "210ms" }}>
-              <SectionRule label="Transcript" />
+              <SectionRule label="Transcript" count="TAP TO SEEK" />
               <Transcript utterances={detail.transcript} playback={playback} />
             </section>
           )}
@@ -131,11 +137,12 @@ export function DetailPane({
   );
 }
 
-function SectionRule({ label }: { label: string }) {
+function SectionRule({ label, count }: { label: string; count?: string }) {
   return (
-    <div className="flex items-center gap-3 mb-3">
-      <h2 className="mono text-[10px] uppercase tracking-[0.18em] text-dim shrink-0">{label}</h2>
-      <div className="h-px flex-1 bg-hairline" />
+    <div className="rule-row">
+      <h2 className="rr-label">{label}</h2>
+      <div className="rr-rule" />
+      {count && <span className="rr-count">{count}</span>}
     </div>
   );
 }
@@ -161,16 +168,20 @@ function ActionItems({
   return (
     <ul className="space-y-2">
       {detail.actionItems.map((a, i) => (
-        <li key={i}>
-          <button onClick={() => toggle(i)} className="flex items-start gap-3 text-left w-full group">
+        <li key={i} style={{ borderBottom: "1px solid var(--hairline-row)" }}>
+          <button onClick={() => toggle(i)} className="flex items-start gap-[11px] text-left w-full py-[9px] group">
             <span
-              className={`mono mt-0.5 size-4 shrink-0 rounded border grid place-items-center text-[10px] transition-colors ${
-                a.done ? "bg-accent border-accent text-accent-ink" : "border-hairline group-hover:border-accent"
-              }`}
+              className="mt-0.5 size-[13px] shrink-0 grid place-items-center transition-colors"
+              style={{ border: `1px solid ${a.done ? "var(--accent)" : "oklch(0.702 0.016 78)"}` }}
             >
-              {a.done ? "✓" : ""}
+              <span className="size-[5px] bg-accent transition-opacity" style={{ opacity: a.done ? 1 : 0 }} />
             </span>
-            <span className={a.done ? "text-faint line-through" : ""}>{a.text}</span>
+            <span
+              className="text-[14px] leading-[1.45] font-light"
+              style={a.done ? { color: "oklch(0.622 0.015 76)", textDecoration: "line-through" } : { color: "var(--ink-body)" }}
+            >
+              {a.text}
+            </span>
           </button>
         </li>
       ))}

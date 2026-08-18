@@ -33,11 +33,11 @@ export function HealthBanner({ health }: { health: Health }) {
 function Banner({ tone, children }: { tone: "warn" | "danger"; children: React.ReactNode }) {
   return (
     <div
-      className="shrink-0 px-4 py-2 text-[13px] border-b"
+      className="shrink-0 px-[18px] py-2 text-[12px] font-light border-b"
       style={{
-        borderColor: tone === "danger" ? "var(--danger)" : "var(--accent)",
-        color: tone === "danger" ? "var(--danger)" : "var(--accent)",
-        background: "color-mix(in oklch, var(--bg-raised) 85%, transparent)",
+        borderColor: tone === "danger" ? "oklch(0.540 0.190 34 / 0.35)" : "oklch(0.575 0.200 47 / 0.4)",
+        color: tone === "danger" ? "var(--danger-ink)" : "var(--accent)",
+        background: tone === "danger" ? "oklch(0.540 0.190 34 / 0.07)" : "color-mix(in oklch, var(--bg-raised) 85%, transparent)",
       }}
     >
       {children}

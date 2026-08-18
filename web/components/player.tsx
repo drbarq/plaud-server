@@ -1,26 +1,63 @@
 "use client";
 
+import { useMemo } from "react";
 import type { Playback } from "./use-playback";
 import { fmtMs } from "./use-playback";
 
-/** Fixed bottom player bar. Thin scrubber (waveform lands with issue #18). */
+/** Synthetic 60-bar waveform (v2 `waveOf`) — decorative until real peaks (#18). */
+function useWave(durationMs: number): number[] {
+  return useMemo(() => {
+    const durS = durationMs / 1000;
+    return Array.from({ length: 60 }, (_, i) => {
+      const x = i / 60;
+      const h =
+        21 *
+        (0.3 +
+          0.7 * Math.abs(Math.sin(x * 9.3 + (durS % 7))) * Math.abs(Math.cos(x * 3.9 + 1.1)) +
+          0.14 * (((i * 37) % 11) / 11));
+      return Math.min(22, Math.max(3, h));
+    });
+  }, [durationMs]);
+}
+
 export function Player({ playback, available }: { playback: Playback; available: boolean }) {
   const { currentMs, durationMs, playing, speed } = playback;
   const ratio = durationMs > 0 ? currentMs / durationMs : 0;
+  const wave = useWave(durationMs);
 
   if (!available) {
     return (
-      <div className="fixed bottom-0 inset-x-0 lg:left-1/3 border-t border-hairline bg-bg/95 backdrop-blur px-4 py-3">
-        <p className="mono text-[10px] uppercase tracking-[0.14em] text-faint text-center">
-          audio not yet archived
+      <div className="fixed bottom-0 inset-x-0 lg:left-1/3 px-4 py-3" style={{ background: "var(--bg-player)", borderTop: "1px solid var(--scroll-thumb)", backdropFilter: "blur(8px)" }}>
+        <p className="mono text-[9px] uppercase tracking-[0.16em] text-center" style={{ color: "var(--ink-faint)" }}>
+          AUDIO NOT YET ARCHIVED
         </p>
       </div>
     );
   }
 
   return (
-    <div className="fixed bottom-0 inset-x-0 lg:left-1/3 border-t border-hairline bg-bg/95 backdrop-blur px-4 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-      {/* scrubber */}
+    <div
+      className="fixed bottom-0 inset-x-0 lg:left-1/3 px-[18px] pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"
+      style={{ background: "var(--bg-player)", borderTop: "1px solid var(--scroll-thumb)", backdropFilter: "blur(8px)" }}
+    >
+      {/* waveform */}
+      <div
+        className="flex items-end gap-px h-6 mb-2 cursor-pointer select-none"
+        onPointerDown={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          playback.seekToRatio((e.clientX - rect.left) / rect.width);
+        }}
+      >
+        {wave.map((h, i) => (
+          <span
+            key={i}
+            className="flex-1 rounded-[0.5px]"
+            style={{ height: h, background: i / 60 <= ratio ? "var(--accent)" : "var(--wave-off)" }}
+          />
+        ))}
+      </div>
+
+      {/* progress */}
       <div
         role="slider"
         aria-label="Seek"
@@ -54,41 +91,38 @@ export function Player({ playback, available }: { playback: Playback; available:
           el.addEventListener("pointerup", onUp);
           el.addEventListener("pointercancel", onUp);
         }}
-        className="relative h-6 flex items-center cursor-pointer select-none touch-none"
+        className="relative h-5 flex items-center cursor-pointer select-none touch-none mb-1"
       >
-        <div className="relative h-[3px] w-full rounded-full bg-inset overflow-hidden">
-          <div
-            className="absolute inset-y-0 left-0 bg-accent rounded-full"
-            style={{ width: `${ratio * 100}%` }}
+        <div className="relative h-px w-full" style={{ background: "var(--hairline-strong)" }}>
+          <div className="absolute inset-y-0 left-0" style={{ width: `${ratio * 100}%`, background: "var(--accent)" }} />
+          <span
+            className="absolute size-[7px] rounded-full"
+            style={{ top: -3, left: `${ratio * 100}%`, marginLeft: -3.5, background: "var(--accent)", boxShadow: "0 0 8px 1px oklch(0.575 0.200 47 / 0.38)" }}
           />
         </div>
-        <div
-          className="absolute size-3 rounded-full bg-accent -translate-x-1/2"
-          style={{ left: `${ratio * 100}%` }}
-        />
       </div>
 
-      <div className="flex items-center gap-4">
-        <button
-          onClick={playback.toggle}
-          aria-label={playing ? "Pause" : "Play"}
-          className="size-10 rounded-full bg-accent text-accent-ink grid place-items-center text-sm"
-        >
-          {playing ? "❚❚" : "▶"}
-        </button>
-        <button onClick={() => playback.skip(-15)} className="mono text-[11px] text-dim hover:text-ink">
-          −15s
-        </button>
-        <button onClick={() => playback.skip(15)} className="mono text-[11px] text-dim hover:text-ink">
-          +15s
-        </button>
-        <span className="mono text-[11px] text-dim ml-auto tabular-nums">
+      <div className="flex items-center">
+        <span className="mono text-[10px] tracking-[0.1em] w-[82px]" style={{ color: "oklch(0.282 0.020 64)" }}>
           {fmtMs(currentMs, durationMs)} / {fmtMs(durationMs)}
         </span>
-        <button
-          onClick={playback.cycleSpeed}
-          className="mono text-[11px] text-dim hover:text-ink w-10 text-right"
-        >
+        <div className="flex-1 flex items-center justify-center gap-[18px]">
+          <button onClick={() => playback.skip(-15)} className="mono text-[9px] tracking-[0.08em]" style={{ color: "oklch(0.440 0.018 70)" }}>
+            ↺15
+          </button>
+          <button
+            onClick={playback.toggle}
+            aria-label={playing ? "Pause" : "Play"}
+            className="size-10 rounded-full grid place-items-center mono text-[12px] font-medium"
+            style={{ background: "var(--accent)", color: "var(--accent-ink)", boxShadow: "0 0 20px -4px oklch(0.575 0.200 47 / 0.60)" }}
+          >
+            {playing ? "❙❙" : "▶"}
+          </button>
+          <button onClick={() => playback.skip(15)} className="mono text-[9px] tracking-[0.08em]" style={{ color: "oklch(0.440 0.018 70)" }}>
+            15↻
+          </button>
+        </div>
+        <button onClick={playback.cycleSpeed} className="mono text-[10px] font-medium text-accent w-[82px] text-right">
           {speed}×
         </button>
       </div>

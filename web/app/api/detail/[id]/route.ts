@@ -20,10 +20,12 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 
   const linkRows = await sql`
     select case when ta.recording_id = ${id} then ta.id else tb.id end as this_id,
-           l.sim,
+           l.sim, l.shared_entities,
            case when ta.recording_id = ${id} then tb.label else ta.label end as other_label,
+           case when ta.recording_id = ${id} then tb.summary_line else ta.summary_line end as other_summary_line,
            case when ta.recording_id = ${id} then tb.recording_id else ta.recording_id end as other_recording_id,
-           case when ta.recording_id = ${id} then rb.title else ra.title end as other_recording_title
+           case when ta.recording_id = ${id} then rb.title else ra.title end as other_recording_title,
+           case when ta.recording_id = ${id} then rb.started_at else ra.started_at end as other_started_at
     from plaud.thread_links l
     join plaud.threads ta on ta.id = l.a
     join plaud.threads tb on tb.id = l.b

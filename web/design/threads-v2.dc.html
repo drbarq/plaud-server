@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; padding: 44px 52px 64px; background: oklch(0.928 0.017 83); }
+  a { color: oklch(0.575 0.200 47); text-decoration: none; }
+  a:hover { color: oklch(0.455 0.160 52); }
+  @keyframes recpulse { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 oklch(0.575 0.200 47 / 0.50); } 50% { opacity: 0.42; box-shadow: 0 0 9px 2px oklch(0.575 0.200 47 / 0.14); } }
+  @keyframes fadeup { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+  @keyframes shimmer { 0%, 100% { opacity: 0.22; } 50% { opacity: 0.55; } }
+  @keyframes echoin { from { opacity: 0; transform: translateY(16px) scale(0.985); } to { opacity: 1; transform: none; } }
+  @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  @keyframes drift { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</helmet>
+
+<div style="position: fixed; inset: 0; pointer-events: none; z-index: 90; mix-blend-mode: multiply; background-image: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22160%22%20height=%22160%22%3E%3Cfilter%20id=%22n%22%3E%3CfeTurbulence%20type=%22fractalNoise%22%20baseFrequency=%220.85%22%20numOctaves=%223%22/%3E%3C/filter%3E%3Crect%20width=%22160%22%20height=%22160%22%20filter=%22url(%23n)%22/%3E%3C/svg%3E'); opacity: {{ grain }}"></div>
+
+<div style="padding: 44px 52px 64px"><header style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; padding: 0 8px 22px; border-bottom: 1px solid oklch(0.806 0.016 81); margin-bottom: 44px">
+  <div style="display: flex; align-items: baseline; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 9px">
+      <div style="width: 7px; height: 7px; border-radius: 99px; background: oklch(0.575 0.200 47); animation: {{ recAnim }}"></div>
+      <div style="font: 600 12px/1 'IBM Plex Mono', monospace; letter-spacing: 0.34em; color: oklch(0.235 0.022 62); text-transform: uppercase">Threads</div>
+    </div>
+    <div style="font: 400 11px/1 'IBM Plex Mono', monospace; letter-spacing: 0.13em; color: oklch(0.572 0.016 75); text-transform: uppercase">a voice-memory instrument · field build 0.4</div>
+  </div>
+  <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
+    <sc-for list="{{ legend }}" as="b" hint-placeholder-count="7">
+      <div style="display: flex; align-items: center; gap: 6px">
+        <div style="width: 5px; height: 5px; border-radius: 99px; background: {{ b.dot }}"></div>
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.15em; color: oklch(0.542 0.016 74)">{{ b.name }}</div>
+      </div>
+    </sc-for>
+  </div>
+</header>
+
+<section style="margin-bottom: 62px">
+  <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px">
+    <div style="font: 500 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.575 0.200 47)">01</div>
+    <div style="font: 500 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.420 0.018 68)">MIND PLATE · SIX DAYS ON ONE SHEET</div>
+  </div>
+  <div style="display: flex; width: 1360px; background: oklch(0.976 0.010 86); border: 1px solid oklch(0.782 0.016 80); box-shadow: 0 30px 60px -34px oklch(0.55 0.03 60 / 0.22)">
+    <div style="padding: 24px 26px 18px; flex: 0 0 auto">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; margin-bottom: 18px">
+        <div>
+          <div style="font: 300 26px/1.2 Newsreader, serif; font-style: italic; color: oklch(0.200 0.024 60); letter-spacing: -0.015em; margin-bottom: 7px">Six days of thinking, drawn as one plate.</div>
+          <div style="font: 300 14px/1.5 Newsreader, serif; color: oklch(0.482 0.018 71); max-width: 64ch; text-wrap: pretty">Time of day runs down. Each memo is a comb of thread spans. The curves are echoes — the same preoccupation found again days later.</div>
+        </div>
+        <div style="text-align: right; flex: 0 0 auto">
+          <div style="font: 500 9px/1.7 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.502 0.016 72)">{{ plateCaption }}</div>
+          <div style="font: 500 9px/1.7 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.575 0.200 47)">{{ seamLabel }}</div>
+        </div>
+      </div>
+
+      <div style="position: relative; width: 1000px; height: 470px">
+      <sc-for list="{{ deskPlate.ticks }}" as="t" hint-placeholder-count="6">
+        <div style="position: absolute; left: 0; top: {{ t.top }}; transform: translateY(-50%); font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.672 0.014 78)">{{ t.label }}</div>
+      </sc-for>
+      <sc-for list="{{ deskPlate.bands }}" as="b" hint-placeholder-count="9">
+        <div style="position: absolute; left: {{ b.lx }}; top: {{ b.ly }}; font: 400 7.5px/1 'IBM Plex Mono', monospace; letter-spacing: 0.1em; color: {{ b.ink }}">{{ b.label }}</div>
+      </sc-for>
+      <svg viewBox="0 0 1000 470" width="1000" height="470" style="display: block; overflow: visible">
+        <sc-for list="{{ deskPlate.ticks }}" as="t" hint-placeholder-count="6">
+          <line x1="46" x2="986" y1="{{ t.y }}" y2="{{ t.y }}" stroke="oklch(0.876 0.012 82)" strokeWidth="1"></line>
+        </sc-for>
+        <sc-for list="{{ deskPlate.cols }}" as="c" hint-placeholder-count="6">
+          <line x1="{{ c.x }}" x2="{{ c.x }}" y1="18" y2="{{ c.y2 }}" stroke="oklch(0.866 0.014 82)" strokeWidth="1" strokeDasharray="1 5"></line>
+        </sc-for>
+        <sc-for list="{{ deskPlate.arcs }}" as="a" hint-placeholder-count="7">
+          <path d="{{ a.d }}" fill="none" stroke="{{ a.stroke }}" strokeWidth="{{ a.w }}" opacity="{{ a.o }}" strokeLinecap="round"></path>
+        </sc-for>
+        <sc-for list="{{ deskPlate.bands }}" as="b" hint-placeholder-count="9">
+          <line x1="{{ b.x }}" x2="{{ b.x }}" y1="{{ b.y0 }}" y2="{{ b.y1 }}" stroke="{{ b.rule }}" strokeWidth="{{ b.w }}" opacity="0.55"></line>
+        </sc-for>
+        <sc-for list="{{ deskPlate.marks }}" as="m" hint-placeholder-count="30">
+          <rect x="{{ m.x }}" y="{{ m.y }}" width="{{ m.w }}" height="{{ m.h }}" fill="{{ m.c }}" opacity="{{ m.o }}" onClick="{{ m.onPick }}" style="cursor: pointer"></rect>
+        </sc-for>
+        <sc-for list="{{ deskPlate.dots }}" as="d" hint-placeholder-count="14">
+          <circle cx="{{ d.x }}" cy="{{ d.y }}" r="{{ d.r }}" fill="{{ d.fill }}" opacity="{{ d.o }}"></circle>
+        </sc-for>
+        <sc-for list="{{ deskPlate.bands }}" as="b" hint-placeholder-count="9">
+          <circle cx="{{ b.x }}" cy="{{ b.y0 }}" r="2.4" fill="{{ b.dot }}" onClick="{{ b.onPick }}" style="cursor: pointer"></circle>
+        </sc-for>
+      </svg>
+      </div>
+      <div style="display: flex; padding: 2px 14px 0 46px">
+        <sc-for list="{{ deskPlate.cols }}" as="c" hint-placeholder-count="6">
+          <div style="flex: 1; text-align: center; font: 500 8.5px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.502 0.016 72)">{{ c.label }}</div>
+        </sc-for>
+      </div>
+
+      <div style="display: flex; gap: 26px; align-items: center; margin-top: 14px; padding-top: 13px; border-top: 1px solid oklch(0.846 0.014 82)">
+        <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.15em; color: oklch(0.622 0.015 77)">BAND LENGTH ∝ DURATION (EXAGGERATED)</div>
+        <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.15em; color: oklch(0.622 0.015 77)">MARK = ONE THREAD SPAN</div>
+        <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.15em; color: oklch(0.622 0.015 77)">CURVE = EMBEDDING ECHO</div>
+        <div style="flex: 1"></div>
+        <div style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.15em; color: oklch(0.575 0.200 47)">TAP ANY MARK — IT LOADS INTO THE INSTRUMENT BELOW</div>
+      </div>
+    </div>
+
+    <div style="width: 306px; flex: 0 0 auto; box-sizing: border-box; border-left: 1px solid oklch(0.826 0.015 81); padding: 24px 22px 20px">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px">
+        <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.24em; color: oklch(0.575 0.200 47)">SEAMS</div>
+        <div style="flex: 1; height: 1px; background: oklch(0.575 0.200 47 / 0.30)"></div>
+        <div onClick="{{ clearSeam }}" style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.622 0.015 77); cursor: pointer">RESET</div>
+      </div>
+      <div style="font: 300 13px/1.6 Newsreader, serif; color: oklch(0.492 0.018 72); margin-bottom: 16px; text-wrap: pretty">Subjects that came back on their own. Tap one to isolate its stitching on the plate.</div>
+      <sc-for list="{{ seams }}" as="sm" hint-placeholder-count="5">
+        <div onClick="{{ sm.onPick }}" style="padding: 12px 12px 13px; margin-bottom: 8px; background: {{ sm.bg }}; border: 1px solid oklch(0.846 0.014 82); border-left: 2px solid {{ sm.edge }}; cursor: pointer" style-hover="background: oklch(0.935 0.020 83)">
+          <div style="font: 400 15px/1.35 Newsreader, serif; font-style: italic; color: {{ sm.ink }}; margin-bottom: 7px; text-wrap: pretty">{{ sm.n }}</div>
+          <div style="font: 300 12px/1.5 Newsreader, serif; color: oklch(0.522 0.018 73); margin-bottom: 10px; text-wrap: pretty">{{ sm.note }}</div>
+          <div style="display: flex; align-items: center; gap: 8px">
+            <div style="display: flex; gap: 3px">
+              <sc-for list="{{ sm.cells }}" as="cl" hint-placeholder-count="6">
+                <div style="width: 7px; height: 7px; background: {{ cl.bg }}"></div>
+              </sc-for>
+            </div>
+            <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.13em; color: oklch(0.622 0.015 77)">{{ sm.meta }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section style="display: flex; gap: 34px; align-items: flex-start; margin-bottom: 60px">
+  <div style="flex: 0 0 auto">
+    <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px">
+      <div style="font: 500 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.575 0.200 47)">02</div>
+      <div style="font: 500 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.420 0.018 68)">HANDHELD · 390 · LIVE</div>
+    </div>
+
+    <div style="position: relative; width: 390px; height: 844px; background: oklch(0.976 0.010 86); border: 1px solid oklch(0.782 0.016 80); border-radius: 22px; overflow: hidden; box-shadow: 0 40px 80px -30px oklch(0.55 0.03 60 / 0.20), inset 0 1px 0 oklch(1 0 0 / 0.85)">
+
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 18px 8px; font: 500 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.12em; color: oklch(0.502 0.016 72)">
+        <span>{{ health.clock }}</span>
+        <span style="letter-spacing: 0.18em">◍ ▮▮▮</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px; padding: 6px 18px 10px; border-bottom: 1px solid oklch(0.846 0.014 82)">
+        <div style="width: 5px; height: 5px; border-radius: 99px; background: oklch(0.575 0.200 47); animation: {{ recAnim }}"></div>
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.520 0.016 73); text-transform: uppercase">{{ health.line }}</div>
+        <div style="flex: 1"></div>
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.622 0.015 77)">{{ health.device }}</div>
+      </div>
+
+      <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+        <div style="height: 754px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: oklch(0.772 0.016 80) transparent">
+          <div style="display: flex; align-items: flex-end; gap: 16px; padding: 20px 18px 14px">
+            <div style="font: 500 11px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: {{ tabMemos }}; cursor: pointer; padding-bottom: 5px; border-bottom: 1px solid {{ tabMemosLine }}" onClick="{{ goMemos }}">MEMOS</div>
+            <div style="font: 500 11px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: {{ tabMind }}; cursor: pointer; padding-bottom: 5px; border-bottom: 1px solid {{ tabMindLine }}" onClick="{{ goMind }}">MIND</div>
+            <div style="font: 500 11px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: {{ tabIdeas }}; cursor: pointer; padding-bottom: 5px; border-bottom: 1px solid {{ tabIdeasLine }}" onClick="{{ goIdeas }}">IDEAS · {{ ideaCount }}</div>
+          </div>
+
+          <div style="padding: 0 18px 12px">
+            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid oklch(0.806 0.016 81); padding-bottom: 8px">
+              <div style="font: 400 11px/1 'IBM Plex Mono', monospace; color: oklch(0.572 0.016 75)">⌕</div>
+              <input value="{{ q }}" onChange="{{ onQuery }}" placeholder="SEARCH TRANSCRIPTS, THREADS, ENTITIES" style="flex: 1; background: transparent; border: 0; outline: none; font: 400 10px/1.4 'IBM Plex Mono', monospace; letter-spacing: 0.1em; color: oklch(0.262 0.020 63); text-transform: uppercase" />
+              <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.642 0.014 77)">{{ resultCount }}</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 7px; overflow-x: auto; padding: 4px 18px 16px; scrollbar-width: none">
+            <sc-for list="{{ chips }}" as="c" hint-placeholder-count="8">
+              <div onClick="{{ c.onPick }}" style="flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid {{ c.line }}; background: {{ c.bg }}; border-radius: 2px; cursor: pointer">
+                <div style="width: 5px; height: 5px; border-radius: 99px; background: {{ c.dot }}"></div>
+                <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.15em; color: {{ c.ink }}; white-space: nowrap">{{ c.name }}</div>
+                <div style="font: 400 9px/1 'IBM Plex Mono', monospace; color: oklch(0.642 0.014 77)">{{ c.count }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+            <div style="padding: 0 0 6px">
+              <div style="display: flex; align-items: center; gap: 12px; padding: 12px 18px 8px">
+                <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.440 0.018 70)">{{ g.label }}</div>
+                <div style="flex: 1; height: 1px; background: oklch(0.826 0.015 81)"></div>
+                <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.642 0.014 77)">{{ g.count }}</div>
+              </div>
+              <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+                <div onClick="{{ r.onOpen }}" style="padding: 12px 18px 14px; border-bottom: 1px solid oklch(0.855 0.014 82); background: {{ r.bg }}; cursor: pointer; animation: fadeup 0.55s cubic-bezier(0.2, 0.75, 0.2, 1) both; animation-delay: {{ r.delay }}" style-hover="background: oklch(0.925 0.020 82)">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 7px">
+                    <div style="width: 5px; height: 5px; border-radius: 99px; background: {{ r.dot }}; flex: 0 0 auto"></div>
+                    <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.15em; color: oklch(0.502 0.016 72)">{{ r.meta }}</div>
+                    <div style="flex: 1"></div>
+                    <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: {{ r.ideaInk }}">{{ r.ideaTag }}</div>
+                  </div>
+                  <div style="font: 400 17px/1.32 Newsreader, serif; font-style: italic; color: oklch(0.235 0.022 62); letter-spacing: -0.005em; margin-bottom: 5px; text-wrap: pretty">{{ r.title }}</div>
+                  <div style="display: {{ r.sumShow }}; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font: 300 13px/1.5 Newsreader, serif; color: oklch(0.492 0.018 72); margin-bottom: 12px; text-wrap: pretty">{{ r.sum }}</div>
+                  <div style="position: relative; height: {{ r.h }}">
+                    <div style="position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: oklch(0.836 0.015 81)"></div>
+                    <sc-for list="{{ r.segs }}" as="s" hint-placeholder-count="6">
+                      <div style="position: absolute; left: {{ s.left }}; width: {{ s.width }}; top: {{ s.top }}; height: {{ s.height }}; background: {{ s.bg }}; border-radius: {{ s.r }}; border-top: {{ s.bt }}"></div>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin-top: 6px; font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.672 0.014 78)">
+                    <span>0:00</span>
+                    <span>{{ r.dur }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+
+          <div style="padding: 22px 18px 40px; text-align: center; font: 400 9px/1.8 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.692 0.014 78)">
+            {{ archiveLine }}
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isIdeas }}" hint-placeholder-val="{{ false }}">
+        <div style="height: 754px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: oklch(0.772 0.016 80) transparent">
+          <div style="display: flex; align-items: flex-end; gap: 16px; padding: 20px 18px 14px">
+            <div style="font: 500 11px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: {{ tabMemos }}; cursor: pointer; padding-bottom: 5px; border-bottom: 1px solid {{ tabMemosLine }}" onClick="{{ goMemos }}">MEMOS</div>
+            <div style="font: 500 11px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: {{ tabMind }}; cursor: pointer; padding-bottom: 5px; border-bottom: 1px solid {{ tabMindLine }}" onClick="{{ goMind }}">MIND</div>
+            <div style="font: 500 11px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: {{ tabIdeas }}; cursor: pointer; padding-bottom: 5px; border-bottom: 1px solid {{ tabIdeasLine }}" onClick="{{ goIdeas }}">IDEAS · {{ ideaCount }}</div>
+          </div>
+          <div style="padding: 6px 18px 18px">
+            <div style="font: 300 15px/1.5 Newsreader, serif; font-style: italic; color: oklch(0.400 0.020 68); text-wrap: pretty">Threads the pipeline flagged as something to make, not just something to feel.</div>
+          </div>
+          <sc-for list="{{ ideas }}" as="i" hint-placeholder-count="5">
+            <div onClick="{{ i.onOpen }}" style="margin: 0 18px 12px; background: oklch(0.962 0.014 85); border: 1px solid oklch(0.806 0.016 81); border-top: 2px solid {{ i.dot }}; padding: 14px 15px 13px; cursor: pointer; animation: fadeup 0.5s ease both; animation-delay: {{ i.delay }}" style-hover="background: oklch(0.935 0.020 83)">
+              <div style="font: 400 15px/1.45 Newsreader, serif; font-style: italic; color: oklch(0.215 0.022 61); margin-bottom: 10px; text-wrap: pretty">{{ i.note }}</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 11px">
+                <sc-for list="{{ i.entities }}" as="e" hint-placeholder-count="2">
+                  <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.13em; color: oklch(0.502 0.016 72); border: 1px solid oklch(0.782 0.016 80); padding: 4px 6px; text-transform: uppercase">{{ e }}</div>
+                </sc-for>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: flex-start; padding-top: 10px; border-top: 1px solid oklch(0.826 0.015 81)">
+                <div style="font: 400 8px/1.5 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.622 0.015 77); flex: 1">{{ i.prov }}</div>
+                <div style="font: 500 9px/1.4 'IBM Plex Mono', monospace; color: oklch(0.575 0.200 47)">→</div>
+              </div>
+            </div>
+          </sc-for>
+          <div style="height: 40px"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMind }}" hint-placeholder-val="{{ false }}">
+        <div style="height: 754px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: oklch(0.772 0.016 80) transparent">
+          <div style="display: flex; align-items: flex-end; gap: 16px; padding: 20px 18px 14px">
+            <div style="font: 500 11px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: {{ tabMemos }}; cursor: pointer; padding-bottom: 5px; border-bottom: 1px solid {{ tabMemosLine }}" onClick="{{ goMemos }}">MEMOS</div>
+            <div style="font: 500 11px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: {{ tabMind }}; cursor: pointer; padding-bottom: 5px; border-bottom: 1px solid {{ tabMindLine }}" onClick="{{ goMind }}">MIND</div>
+            <div style="font: 500 11px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: {{ tabIdeas }}; cursor: pointer; padding-bottom: 5px; border-bottom: 1px solid {{ tabIdeasLine }}" onClick="{{ goIdeas }}">IDEAS · {{ ideaCount }}</div>
+          </div>
+
+          <div style="padding: 4px 18px 14px">
+            <div style="font: 300 20px/1.3 Newsreader, serif; font-style: italic; color: oklch(0.200 0.024 60); margin-bottom: 8px; text-wrap: pretty">Six days, one sheet.</div>
+            <div style="font: 300 13px/1.55 Newsreader, serif; color: oklch(0.492 0.018 72); text-wrap: pretty">Time of day runs down. Each memo is a comb of thread spans. Curves are echoes the index found on its own.</div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid oklch(0.846 0.014 82)">
+              <div style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.575 0.200 47)">{{ seamLabel }}</div>
+              <div style="flex: 1"></div>
+              <div onClick="{{ clearSeam }}" style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.622 0.015 77); cursor: pointer">RESET</div>
+            </div>
+          </div>
+
+          <div style="padding: 0 18px 8px">
+            <div style="position: relative; width: 354px; height: 580px">
+            <sc-for list="{{ mobPlate.ticks }}" as="t" hint-placeholder-count="4">
+              <div style="position: absolute; left: 0; top: {{ t.top }}; transform: translateY(-50%); font: 400 7.5px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.672 0.014 78)">{{ t.label }}</div>
+            </sc-for>
+            <svg viewBox="0 0 354 580" width="354" height="580" style="display: block; overflow: visible">
+              <sc-for list="{{ mobPlate.ticks }}" as="t" hint-placeholder-count="4">
+                <line x1="30" x2="340" y1="{{ t.y }}" y2="{{ t.y }}" stroke="oklch(0.876 0.012 82)" strokeWidth="1"></line>
+              </sc-for>
+              <sc-for list="{{ mobPlate.cols }}" as="c" hint-placeholder-count="6">
+                <line x1="{{ c.x }}" x2="{{ c.x }}" y1="18" y2="{{ c.y2 }}" stroke="oklch(0.866 0.014 82)" strokeWidth="1" strokeDasharray="1 5"></line>
+              </sc-for>
+              <sc-for list="{{ mobPlate.arcs }}" as="a" hint-placeholder-count="7">
+                <path d="{{ a.d }}" fill="none" stroke="{{ a.stroke }}" strokeWidth="{{ a.w }}" opacity="{{ a.o }}" strokeLinecap="round"></path>
+              </sc-for>
+              <sc-for list="{{ mobPlate.bands }}" as="b" hint-placeholder-count="9">
+                <line x1="{{ b.x }}" x2="{{ b.x }}" y1="{{ b.y0 }}" y2="{{ b.y1 }}" stroke="{{ b.rule }}" strokeWidth="{{ b.w }}" opacity="0.55"></line>
+              </sc-for>
+              <sc-for list="{{ mobPlate.marks }}" as="m" hint-placeholder-count="30">
+                <rect x="{{ m.x }}" y="{{ m.y }}" width="{{ m.w }}" height="{{ m.h }}" fill="{{ m.c }}" opacity="{{ m.o }}" onClick="{{ m.onPick }}" style="cursor: pointer"></rect>
+              </sc-for>
+              <sc-for list="{{ mobPlate.dots }}" as="d" hint-placeholder-count="14">
+                <circle cx="{{ d.x }}" cy="{{ d.y }}" r="{{ d.r }}" fill="{{ d.fill }}" opacity="{{ d.o }}"></circle>
+              </sc-for>
+              <sc-for list="{{ mobPlate.bands }}" as="b" hint-placeholder-count="9">
+                <circle cx="{{ b.x }}" cy="{{ b.y0 }}" r="2.6" fill="{{ b.dot }}" onClick="{{ b.onPick }}" style="cursor: pointer"></circle>
+              </sc-for>
+            </svg>
+            </div>
+            <div style="display: flex; padding: 2px 14px 0 30px">
+              <sc-for list="{{ mobPlate.cols }}" as="c" hint-placeholder-count="6">
+                <div style="flex: 1; text-align: center; font: 500 7.5px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.502 0.016 72)">{{ c.label }}</div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding: 6px 18px 12px">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px">
+              <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.575 0.200 47)">SEAMS</div>
+              <div style="flex: 1; height: 1px; background: oklch(0.575 0.200 47 / 0.30)"></div>
+              <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.642 0.014 77)">TAP TO ISOLATE</div>
+            </div>
+            <sc-for list="{{ seams }}" as="sm" hint-placeholder-count="5">
+              <div onClick="{{ sm.onPick }}" style="padding: 12px 13px 13px; margin-bottom: 8px; background: {{ sm.bg }}; border: 1px solid oklch(0.846 0.014 82); border-left: 2px solid {{ sm.edge }}; cursor: pointer">
+                <div style="font: 400 15px/1.35 Newsreader, serif; font-style: italic; color: {{ sm.ink }}; margin-bottom: 8px; text-wrap: pretty">{{ sm.n }}</div>
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <div style="display: flex; gap: 3px">
+                    <sc-for list="{{ sm.cells }}" as="cl" hint-placeholder-count="6">
+                      <div style="width: 7px; height: 7px; background: {{ cl.bg }}"></div>
+                    </sc-for>
+                  </div>
+                  <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.13em; color: oklch(0.622 0.015 77)">{{ sm.meta }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="height: 30px"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+        <div style="height: 754px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: oklch(0.772 0.016 80) transparent">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 14px 18px 12px; border-bottom: 1px solid oklch(0.846 0.014 82)">
+            <div onClick="{{ goMemos }}" style="font: 400 12px/1 'IBM Plex Mono', monospace; color: oklch(0.340 0.020 66); cursor: pointer">←</div>
+            <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.18em; color: oklch(0.602 0.015 76)">{{ det.index }}</div>
+            <div style="flex: 1"></div>
+            <div style="display: flex; align-items: center; gap: 6px; border: 1px solid {{ det.dot }}; padding: 4px 8px">
+              <div style="width: 4px; height: 4px; border-radius: 99px; background: {{ det.dot }}"></div>
+              <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: {{ det.dot }}">{{ det.bucket }}</div>
+            </div>
+          </div>
+
+          <div style="padding: 20px 18px 16px">
+            <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.18em; color: oklch(0.520 0.016 73); margin-bottom: 12px">{{ det.dateLine }}</div>
+            <div style="font: 300 25px/1.24 Newsreader, serif; font-style: italic; color: oklch(0.200 0.024 60); letter-spacing: -0.012em; margin-bottom: 12px; text-wrap: pretty">{{ det.title }}</div>
+            <div style="font: 300 14px/1.6 Newsreader, serif; color: oklch(0.452 0.018 70); margin-bottom: 14px; text-wrap: pretty">{{ det.sum }}</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px">
+              <sc-for list="{{ det.tags }}" as="t" hint-placeholder-count="3">
+                <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.542 0.016 74); text-transform: uppercase">#{{ t }}</div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding: 4px 18px 18px">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px">
+              <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.420 0.020 68)">THREAD MAP</div>
+              <div style="flex: 1; height: 1px; background: oklch(0.826 0.015 81)"></div>
+              <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.642 0.014 77)">{{ det.threadCount }}</div>
+            </div>
+            <div style="position: relative">
+              <sc-for list="{{ det.lanes }}" as="l" hint-placeholder-count="5">
+                <div onClick="{{ l.onSel }}" style="display: flex; align-items: center; gap: 8px; height: 22px; background: {{ l.rowBg }}; cursor: pointer">
+                  <div style="width: 20px; font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.1em; color: {{ l.ink }}">{{ l.n }}</div>
+                  <div style="position: relative; flex: 1; height: 22px">
+                    <div style="position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: oklch(0.846 0.014 82)"></div>
+                    <sc-for list="{{ l.gaps }}" as="gp" hint-placeholder-count="1">
+                      <div style="position: absolute; left: {{ gp.left }}; width: {{ gp.width }}; top: 50%; height: 0; border-top: 1px dotted {{ l.bg }}"></div>
+                    </sc-for>
+                    <sc-for list="{{ l.segs }}" as="s" hint-placeholder-count="2">
+                      <div style="position: absolute; left: {{ s.left }}; width: {{ s.width }}; top: 8px; height: 7px; background: {{ l.bg }}; border-radius: 1px"></div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+              <div style="position: absolute; inset: 0 0 0 28px; pointer-events: none">
+                <div style="position: absolute; top: 0; bottom: 0; width: 1px; background: oklch(0.575 0.200 47); left: {{ det.playPct }}">
+                  <div style="position: absolute; top: -3px; left: -2.5px; width: 6px; height: 6px; background: oklch(0.575 0.200 47); transform: rotate(45deg)"></div>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0 0 28px; font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.672 0.014 78)">
+              <span>0:00</span>
+              <span>{{ det.midLabel }}</span>
+              <span>{{ det.durLabel }}</span>
+            </div>
+          </div>
+
+          <div style="padding: 4px 18px 20px">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px">
+              <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.420 0.020 68)">ACTION ITEMS</div>
+              <div style="flex: 1; height: 1px; background: oklch(0.826 0.015 81)"></div>
+              <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.642 0.014 77)">{{ det.openLabel }}</div>
+            </div>
+            <sc-for list="{{ det.actions }}" as="a" hint-placeholder-count="3">
+              <div onClick="{{ a.onToggle }}" style="display: flex; align-items: flex-start; gap: 11px; padding: 9px 0; border-bottom: 1px solid oklch(0.855 0.014 82); cursor: pointer">
+                <div style="width: 13px; height: 13px; border: 1px solid {{ a.box }}; margin-top: 3px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center">
+                  <div style="width: 5px; height: 5px; background: oklch(0.575 0.200 47); opacity: {{ a.tick }}"></div>
+                </div>
+                <div style="font: 300 14px/1.45 Newsreader, serif; color: {{ a.ink }}; text-decoration: {{ a.strike }}; text-wrap: pretty">{{ a.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="padding: 4px 18px 20px">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px">
+              <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.420 0.020 68)">THREADS OF CONSCIOUSNESS</div>
+              <div style="flex: 1; height: 1px; background: oklch(0.826 0.015 81)"></div>
+            </div>
+            <sc-for list="{{ det.threads }}" as="th" hint-placeholder-count="4">
+              <div onClick="{{ th.onSel }}" style="background: {{ th.cardBg }}; border: 1px solid {{ th.cardLine }}; padding: 14px 14px 13px; margin-bottom: 10px; cursor: pointer">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 9px">
+                  <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: {{ th.accent }}">{{ th.n }}</div>
+                  <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.13em; color: oklch(0.542 0.016 74)">{{ th.spanLabel }}</div>
+                  <div style="flex: 1"></div>
+                  <sc-if value="{{ th.isIdea }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; align-items: center; gap: 5px; border: 1px solid oklch(0.520 0.150 128 / 0.5); padding: 3px 6px">
+                      <div style="width: 4px; height: 4px; border-radius: 99px; background: oklch(0.520 0.150 128)"></div>
+                      <div style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.520 0.150 128)">IDEA</div>
+                    </div>
+                  </sc-if>
+                </div>
+                <div style="font: 400 16px/1.35 Newsreader, serif; font-style: italic; color: oklch(0.215 0.022 61); margin-bottom: 7px; text-wrap: pretty">{{ th.label }}</div>
+                <div style="font: 300 13px/1.5 Newsreader, serif; color: oklch(0.482 0.018 71); margin-bottom: 12px; text-wrap: pretty">{{ th.sum }}</div>
+                <div style="position: relative; height: 6px; margin-bottom: 11px">
+                  <div style="position: absolute; left: 0; right: 0; top: 2.5px; height: 1px; background: oklch(0.826 0.015 81)"></div>
+                  <sc-for list="{{ th.gaps }}" as="gp" hint-placeholder-count="1">
+                    <div style="position: absolute; left: {{ gp.left }}; width: {{ gp.width }}; top: 2.5px; height: 0; border-top: 1px dotted {{ th.accent }}"></div>
+                  </sc-for>
+                  <sc-for list="{{ th.mini }}" as="s" hint-placeholder-count="2">
+                    <div style="position: absolute; left: {{ s.left }}; width: {{ s.width }}; top: 0; height: 6px; background: {{ th.accent }}; border-radius: 1px"></div>
+                  </sc-for>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px">
+                  <sc-for list="{{ th.entities }}" as="e" hint-placeholder-count="3">
+                    <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.13em; color: oklch(0.520 0.016 73); border: 1px solid oklch(0.806 0.016 81); padding: 4px 6px; text-transform: uppercase">{{ e }}</div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ th.hasIdea }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top: 12px; padding: 10px 12px; background: oklch(0.520 0.150 128 / 0.10); border-left: 2px solid oklch(0.520 0.150 128 / 0.55)">
+                    <div style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.18em; color: oklch(0.520 0.150 128); margin-bottom: 6px">CONTENT IDEA</div>
+                    <div style="font: 300 13px/1.5 Newsreader, serif; font-style: italic; color: oklch(0.300 0.020 64); text-wrap: pretty">{{ th.ideaNote }}</div>
+                  </div>
+                </sc-if>
+                <sc-for list="{{ th.links }}" as="k" hint-placeholder-count="0">
+                  <div onClick="{{ k.onOpen }}" style="margin-top: 12px; padding-left: 13px; border-left: 1px solid oklch(0.575 0.200 47 / 0.42); cursor: pointer">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                      <div style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.575 0.200 47)">CONNECTS TO</div>
+                      <div style="display: flex; gap: 2px; align-items: center">
+                        <sc-for list="{{ k.ticks }}" as="tk" hint-placeholder-count="8">
+                          <div style="width: 2px; height: 7px; background: {{ tk.bg }}"></div>
+                        </sc-for>
+                      </div>
+                      <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.12em; color: oklch(0.502 0.016 72)">{{ k.sim }}</div>
+                    </div>
+                    <div style="font: 400 14px/1.4 Newsreader, serif; font-style: italic; color: oklch(0.300 0.024 60); text-wrap: pretty">{{ k.title }}</div>
+                    <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.15em; color: oklch(0.602 0.015 76); margin-top: 6px">{{ k.meta }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="padding: 4px 18px 130px">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px">
+              <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.420 0.020 68)">TRANSCRIPT</div>
+              <div style="flex: 1; height: 1px; background: oklch(0.826 0.015 81)"></div>
+              <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.642 0.014 77)">TAP TO SEEK</div>
+            </div>
+            <sc-for list="{{ det.lines }}" as="ln" hint-placeholder-count="8">
+              <div onClick="{{ ln.onSeek }}" style="display: flex; gap: 12px; padding: 8px 10px 8px 9px; background: {{ ln.bg }}; border-left: {{ ln.rule }}; cursor: pointer; transition: background 0.25s ease, color 0.25s ease">
+                <div style="width: 30px; flex: 0 0 auto; font: 400 9px/1.7 'IBM Plex Mono', monospace; letter-spacing: 0.06em; color: {{ ln.time }}">{{ ln.t }}</div>
+                <div style="font: 300 14px/1.55 Newsreader, serif; color: {{ ln.color }}; text-wrap: pretty">{{ ln.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; background: oklch(0.968 0.012 85 / 0.96); border-top: 1px solid oklch(0.772 0.016 80); backdrop-filter: blur(8px); padding: 12px 18px 16px">
+          <div style="display: flex; align-items: flex-end; gap: 1px; height: 24px; margin-bottom: 8px; cursor: pointer" onClick="{{ det.onScrubMid }}">
+            <sc-for list="{{ det.wave }}" as="w" hint-placeholder-count="48">
+              <div style="flex: 1; height: {{ w.h }}; background: {{ w.bg }}; border-radius: 0.5px"></div>
+            </sc-for>
+          </div>
+          <div style="position: relative; height: 1px; background: oklch(0.806 0.016 81); margin-bottom: 9px">
+            <div style="position: absolute; left: 0; top: 0; height: 1px; background: oklch(0.575 0.200 47); width: {{ det.playPct }}"></div>
+            <div style="position: absolute; top: -3px; width: 7px; height: 7px; border-radius: 99px; background: oklch(0.575 0.200 47); margin-left: -3.5px; left: {{ det.playPct }}; box-shadow: 0 0 8px 1px oklch(0.575 0.200 47 / 0.38)"></div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <div style="font: 400 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.1em; color: oklch(0.282 0.020 64); width: 62px">{{ det.tLabel }}</div>
+            <div style="display: flex; align-items: center; gap: 18px">
+              <div onClick="{{ det.back15 }}" style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.08em; color: oklch(0.440 0.018 70); cursor: pointer">↺15</div>
+              <div onClick="{{ det.toggle }}" style="width: 40px; height: 40px; border-radius: 99px; background: oklch(0.575 0.200 47); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 20px -4px oklch(0.575 0.200 47 / 0.60)">
+                <div style="font: 500 12px/1 'IBM Plex Mono', monospace; color: oklch(0.985 0.010 88)">{{ det.playIcon }}</div>
+              </div>
+              <div onClick="{{ det.fwd15 }}" style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.08em; color: oklch(0.440 0.018 70); cursor: pointer">15↻</div>
+            </div>
+            <div onClick="{{ det.cycleSpeed }}" style="width: 62px; text-align: right; font: 500 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.1em; color: oklch(0.575 0.200 47); cursor: pointer">{{ det.speedLabel }}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ echo }}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; inset: 0; background: oklch(0.902 0.020 84 / 0.88); backdrop-filter: blur(10px); z-index: 40; display: flex; flex-direction: column; justify-content: center; padding: 24px 18px; animation: drift 0.35s ease both">
+          <div style="animation: echoin 0.55s cubic-bezier(0.2, 0.75, 0.2, 1) both">
+            <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 20px">
+              <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.26em; color: oklch(0.575 0.200 47)">ECHO</div>
+              <div style="flex: 1; height: 1px; background: oklch(0.575 0.200 47 / 0.38)"></div>
+              <div style="display: flex; gap: 2px">
+                <sc-for list="{{ echo.ticks }}" as="tk" hint-placeholder-count="8">
+                  <div style="width: 2px; height: 9px; background: {{ tk.bg }}"></div>
+                </sc-for>
+              </div>
+              <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.12em; color: oklch(0.340 0.020 66)">{{ echo.sim }}</div>
+            </div>
+
+            <div style="border: 1px solid oklch(0.772 0.016 80); background: oklch(0.958 0.012 85); padding: 15px 15px 14px">
+              <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.562 0.016 74); margin-bottom: 9px">{{ echo.aMeta }}</div>
+              <div style="font: 400 16px/1.38 Newsreader, serif; font-style: italic; color: oklch(0.215 0.022 61); text-wrap: pretty">{{ echo.aLabel }}</div>
+              <div style="font: 300 13px/1.5 Newsreader, serif; color: oklch(0.482 0.018 71); margin-top: 8px; text-wrap: pretty">{{ echo.aQuote }}</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 0; padding: 2px 0">
+              <div style="width: 1px; height: 22px; background: oklch(0.575 0.200 47 / 0.55); transform-origin: top; animation: grow 0.5s 0.25s cubic-bezier(0.2, 0.75, 0.2, 1) both"></div>
+              <div style="display: flex; align-items: center; gap: 9px; padding: 5px 0">
+                <div style="width: 6px; height: 6px; background: oklch(0.575 0.200 47); transform: rotate(45deg)"></div>
+                <div style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.575 0.200 47)">{{ echo.bridge }}</div>
+              </div>
+              <div style="width: 1px; height: 22px; background: oklch(0.575 0.200 47 / 0.55); transform-origin: top; animation: grow 0.5s 0.45s cubic-bezier(0.2, 0.75, 0.2, 1) both"></div>
+            </div>
+
+            <div style="border: 1px solid oklch(0.575 0.200 47 / 0.38); background: oklch(0.945 0.022 83); padding: 15px 15px 14px">
+              <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.575 0.200 47); margin-bottom: 9px">{{ echo.bMeta }}</div>
+              <div style="font: 400 16px/1.38 Newsreader, serif; font-style: italic; color: oklch(0.215 0.022 61); text-wrap: pretty">{{ echo.bLabel }}</div>
+              <div style="font: 300 13px/1.5 Newsreader, serif; color: oklch(0.482 0.018 71); margin-top: 8px; text-wrap: pretty">{{ echo.bQuote }}</div>
+            </div>
+
+            <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid oklch(0.806 0.016 81)">
+              <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.582 0.015 75); margin-bottom: 9px">SHARED ENTITIES</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 5px">
+                <sc-for list="{{ echo.shared }}" as="e" hint-placeholder-count="2">
+                  <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.13em; color: oklch(0.575 0.200 47); border: 1px solid oklch(0.575 0.200 47 / 0.42); padding: 4px 6px; text-transform: uppercase">{{ e }}</div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 9px; margin-top: 20px">
+              <div onClick="{{ echo.onJump }}" style="flex: 1; text-align: center; padding: 12px; background: oklch(0.575 0.200 47); font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.18em; color: oklch(0.985 0.010 88); cursor: pointer">OPEN THAT MEMO</div>
+              <div onClick="{{ echo.onClose }}" style="padding: 12px 16px; border: 1px solid oklch(0.752 0.016 80); font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.18em; color: oklch(0.440 0.018 70); cursor: pointer">CLOSE</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="flex: 0 0 auto; width: 268px; padding-top: 34px; display: flex; flex-direction: column; gap: 22px">
+    <div>
+      <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.575 0.200 47); margin-bottom: 10px">READING THE SPAN AXIS</div>
+      <div style="font: 300 14px/1.6 Newsreader, serif; color: oklch(0.400 0.020 68); text-wrap: pretty">Each memo is one time axis. Every thread gets a lane on it. A thread that is <span style="font-style: italic; color: oklch(0.235 0.022 62)">left and resumed</span> shows as two bars joined by a dotted hold — the shape of a mind wandering back.</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 11px; padding: 14px 0; border-top: 1px solid oklch(0.826 0.015 81); border-bottom: 1px solid oklch(0.826 0.015 81)">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="width: 34px; height: 3px; background: oklch(0.600 0.150 68); border-radius: 1px"></div>
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.502 0.016 72)">SPAN — THREAD IS SPEAKING</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="width: 34px; height: 0; border-top: 1px dotted oklch(0.600 0.150 68 / 0.5)"></div>
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.502 0.016 72)">HOLD — LEFT, NOT DROPPED</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="width: 34px; display: flex; justify-content: center"><div style="width: 1px; height: 12px; background: oklch(0.575 0.200 47)"></div></div>
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.502 0.016 72)">PLAYHEAD — CROSSES ALL LANES</div>
+      </div>
+    </div>
+    <div>
+      <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.440 0.018 70); margin-bottom: 10px">TRY IT</div>
+      <div style="font: 300 13px/1.65 Newsreader, serif; color: oklch(0.482 0.018 71); text-wrap: pretty">Tap a memo → play → the playhead crosses the thread map and the transcript follows. Tap a <span style="color: oklch(0.575 0.200 47)">CONNECTS TO</span> block to open the echo.</div>
+    </div>
+    <div style="padding: 13px 14px; border: 1px solid oklch(0.816 0.015 81); background: oklch(0.955 0.014 84)">
+      <div style="font: 400 9px/1.7 'IBM Plex Mono', monospace; letter-spacing: 0.12em; color: oklch(0.602 0.015 76)">SPAN TREATMENT: {{ styleLabel }}<br />SWITCH IT IN TWEAKS</div>
+    </div>
+  </div>
+</section>
+
+<section style="margin-bottom: 60px">
+  <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px">
+    <div style="font: 500 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.575 0.200 47)">03</div>
+    <div style="font: 500 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.420 0.018 68)">DESK · MASTER–DETAIL · SAME INSTRUMENT, MORE ROOM</div>
+  </div>
+
+  <div style="width: 1360px; height: 800px; display: flex; background: oklch(0.976 0.010 86); border: 1px solid oklch(0.782 0.016 80); border-radius: 6px; overflow: hidden; box-shadow: 0 40px 80px -34px oklch(0.55 0.03 60 / 0.16)">
+
+    <div style="width: 316px; flex: 0 0 auto; border-right: 1px solid oklch(0.836 0.015 81); display: flex; flex-direction: column">
+      <div style="padding: 16px 18px 13px; border-bottom: 1px solid oklch(0.836 0.015 81)">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px">
+          <div style="width: 6px; height: 6px; border-radius: 99px; background: oklch(0.575 0.200 47); animation: {{ recAnim }}"></div>
+          <div style="font: 600 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.3em; color: oklch(0.250 0.022 62)">THREADS</div>
+          <div style="flex: 1"></div>
+          <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.13em; color: oklch(0.622 0.015 77)">{{ health.device }}</div>
+        </div>
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.542 0.016 74)">{{ health.line }}</div>
+      </div>
+      <div style="padding: 13px 18px; border-bottom: 1px solid oklch(0.836 0.015 81); display: flex; align-items: center; gap: 9px">
+        <div style="font: 400 11px/1 'IBM Plex Mono', monospace; color: oklch(0.572 0.016 75)">⌕</div>
+        <input value="{{ q }}" onChange="{{ onQuery }}" placeholder="SEARCH" style="flex: 1; background: transparent; border: 0; outline: none; font: 400 10px/1.4 'IBM Plex Mono', monospace; letter-spacing: 0.1em; color: oklch(0.262 0.020 63); text-transform: uppercase" />
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.642 0.014 77)">{{ resultCount }}</div>
+      </div>
+      <div style="padding: 12px 18px; border-bottom: 1px solid oklch(0.836 0.015 81); display: flex; flex-wrap: wrap; gap: 6px">
+        <sc-for list="{{ chips }}" as="c" hint-placeholder-count="8">
+          <div onClick="{{ c.onPick }}" style="display: flex; align-items: center; gap: 5px; padding: 5px 8px; border: 1px solid {{ c.line }}; background: {{ c.bg }}; cursor: pointer">
+            <div style="width: 4px; height: 4px; border-radius: 99px; background: {{ c.dot }}"></div>
+            <div style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: {{ c.ink }}">{{ c.name }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: oklch(0.772 0.016 80) transparent">
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 12px 18px 7px">
+              <div style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.452 0.018 70)">{{ g.label }}</div>
+              <div style="flex: 1; height: 1px; background: oklch(0.846 0.014 82)"></div>
+            </div>
+            <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+              <div onClick="{{ r.onOpen }}" style="padding: 10px 18px 12px; border-bottom: 1px solid oklch(0.855 0.014 82); background: {{ r.bg }}; border-left: 2px solid {{ r.edge }}; cursor: pointer" style-hover="background: oklch(0.925 0.020 82)">
+                <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 5px">
+                  <div style="width: 4px; height: 4px; border-radius: 99px; background: {{ r.dot }}"></div>
+                  <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.520 0.016 73)">{{ r.meta }}</div>
+                </div>
+                <div style="font: 400 14px/1.32 Newsreader, serif; font-style: italic; color: oklch(0.250 0.022 62); margin-bottom: 9px; text-wrap: pretty">{{ r.title }}</div>
+                <div style="position: relative; height: {{ r.h }}">
+                  <div style="position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: oklch(0.846 0.014 82)"></div>
+                  <sc-for list="{{ r.segs }}" as="s" hint-placeholder-count="5">
+                    <div style="position: absolute; left: {{ s.left }}; width: {{ s.width }}; top: {{ s.top }}; height: {{ s.height }}; background: {{ s.bg }}; border-radius: {{ s.r }}; border-top: {{ s.bt }}"></div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+      <div style="padding: 22px 30px 18px; border-bottom: 1px solid oklch(0.836 0.015 81)">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px">
+          <div style="display: flex; align-items: center; gap: 6px; border: 1px solid {{ det.dot }}; padding: 4px 8px">
+            <div style="width: 4px; height: 4px; border-radius: 99px; background: {{ det.dot }}"></div>
+            <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: {{ det.dot }}">{{ det.bucket }}</div>
+          </div>
+          <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.18em; color: oklch(0.542 0.016 74)">{{ det.dateLine }}</div>
+          <div style="flex: 1"></div>
+          <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.18em; color: oklch(0.642 0.014 77)">{{ det.index }}</div>
+        </div>
+        <div style="display: flex; gap: 34px; align-items: flex-start">
+          <div style="flex: 1; min-width: 0">
+            <div style="font: 300 30px/1.2 Newsreader, serif; font-style: italic; color: oklch(0.200 0.024 60); letter-spacing: -0.015em; margin-bottom: 11px; text-wrap: pretty">{{ det.title }}</div>
+            <div style="font: 300 15px/1.6 Newsreader, serif; color: oklch(0.452 0.018 70); max-width: 62ch; text-wrap: pretty">{{ det.sum }}</div>
+          </div>
+          <div style="width: 210px; flex: 0 0 auto; padding-top: 4px">
+            <div style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.582 0.015 75); margin-bottom: 8px">ACTION ITEMS · {{ det.openLabel }}</div>
+            <sc-for list="{{ det.actions }}" as="a" hint-placeholder-count="3">
+              <div onClick="{{ a.onToggle }}" style="display: flex; align-items: flex-start; gap: 9px; padding: 6px 0; cursor: pointer">
+                <div style="width: 11px; height: 11px; border: 1px solid {{ a.box }}; margin-top: 3px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center">
+                  <div style="width: 4px; height: 4px; background: oklch(0.575 0.200 47); opacity: {{ a.tick }}"></div>
+                </div>
+                <div style="font: 300 12.5px/1.4 Newsreader, serif; color: {{ a.ink }}; text-decoration: {{ a.strike }}">{{ a.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 18px 30px 16px; border-bottom: 1px solid oklch(0.836 0.015 81)">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px">
+          <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.420 0.020 68)">THREAD MAP</div>
+          <div style="flex: 1; height: 1px; background: oklch(0.836 0.015 81)"></div>
+          <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.642 0.014 77)">{{ det.threadCount }}</div>
+        </div>
+        <div style="position: relative">
+          <sc-for list="{{ det.lanes }}" as="l" hint-placeholder-count="5">
+            <div onClick="{{ l.onSel }}" style="display: flex; align-items: center; gap: 12px; height: 24px; background: {{ l.rowBg }}; cursor: pointer">
+              <div style="width: 20px; flex: 0 0 auto; font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.1em; color: {{ l.ink }}">{{ l.n }}</div>
+              <div style="width: 300px; flex: 0 0 auto; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font: 400 12.5px/1 Newsreader, serif; font-style: italic; color: {{ l.labelInk }}">{{ l.label }}</div>
+              <div style="position: relative; flex: 1; height: 24px">
+                <div style="position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: oklch(0.866 0.014 82)"></div>
+                <sc-for list="{{ l.gaps }}" as="gp" hint-placeholder-count="1">
+                  <div style="position: absolute; left: {{ gp.left }}; width: {{ gp.width }}; top: 50%; height: 0; border-top: 1px dotted {{ l.bg }}"></div>
+                </sc-for>
+                <sc-for list="{{ l.segs }}" as="s" hint-placeholder-count="2">
+                  <div style="position: absolute; left: {{ s.left }}; width: {{ s.width }}; top: 8px; height: 8px; background: {{ l.bg }}; border-radius: 1px"></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <div style="position: absolute; inset: 0 0 0 344px; pointer-events: none">
+            <div style="position: absolute; top: 0; bottom: 0; width: 1px; background: oklch(0.575 0.200 47); left: {{ det.playPct }}">
+              <div style="position: absolute; top: -3px; left: -2.5px; width: 6px; height: 6px; background: oklch(0.575 0.200 47); transform: rotate(45deg)"></div>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0 0 344px; font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.672 0.014 78)">
+          <span>0:00</span>
+          <span>{{ det.midLabel }}</span>
+          <span>{{ det.durLabel }}</span>
+        </div>
+      </div>
+
+      <div style="flex: 1; min-height: 0; display: flex">
+        <div style="flex: 1; min-width: 0; overflow-y: auto; padding: 18px 30px 24px; scrollbar-width: thin; scrollbar-color: oklch(0.772 0.016 80) transparent">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px">
+            <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.420 0.020 68)">THREADS</div>
+            <div style="flex: 1; height: 1px; background: oklch(0.836 0.015 81)"></div>
+          </div>
+          <sc-for list="{{ det.threads }}" as="th" hint-placeholder-count="4">
+            <div onClick="{{ th.onSel }}" style="background: {{ th.cardBg }}; border: 1px solid {{ th.cardLine }}; padding: 13px 14px; margin-bottom: 9px; cursor: pointer">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 7px">
+                <div style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: {{ th.accent }}">{{ th.n }}</div>
+                <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.13em; color: oklch(0.562 0.016 74)">{{ th.spanLabel }}</div>
+                <div style="flex: 1"></div>
+                <sc-if value="{{ th.isIdea }}" hint-placeholder-val="{{ false }}">
+                  <div style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.520 0.150 128)">◆ IDEA</div>
+                </sc-if>
+              </div>
+              <div style="font: 400 15px/1.35 Newsreader, serif; font-style: italic; color: oklch(0.235 0.022 62); margin-bottom: 6px; text-wrap: pretty">{{ th.label }}</div>
+              <div style="font: 300 12.5px/1.5 Newsreader, serif; color: oklch(0.492 0.018 72); text-wrap: pretty">{{ th.sum }}</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px">
+                <sc-for list="{{ th.entities }}" as="e" hint-placeholder-count="3">
+                  <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.13em; color: oklch(0.542 0.016 74); border: 1px solid oklch(0.816 0.015 81); padding: 3px 5px; text-transform: uppercase">{{ e }}</div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="width: 372px; flex: 0 0 auto; border-left: 1px solid oklch(0.836 0.015 81); overflow-y: auto; padding: 18px 22px 24px; scrollbar-width: thin; scrollbar-color: oklch(0.772 0.016 80) transparent">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px">
+            <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.575 0.200 47)">ECHOES</div>
+            <div style="flex: 1; height: 1px; background: oklch(0.575 0.200 47 / 0.30)"></div>
+            <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.622 0.015 77)">{{ det.echoCount }}</div>
+          </div>
+          <div style="font: 300 13px/1.6 Newsreader, serif; color: oklch(0.522 0.018 73); margin-bottom: 16px; text-wrap: pretty">Threads in this memo that the index has heard before.</div>
+          <sc-for list="{{ det.echoes }}" as="k" hint-placeholder-count="2">
+            <div onClick="{{ k.onOpen }}" style="padding: 13px 0 15px; border-top: 1px solid oklch(0.836 0.015 81); cursor: pointer">
+              <div style="font: 400 12.5px/1.4 Newsreader, serif; font-style: italic; color: oklch(0.440 0.018 70); margin-bottom: 9px; text-wrap: pretty">{{ k.from }}</div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px">
+                <div style="width: 1px; height: 10px; background: oklch(0.575 0.200 47 / 0.60)"></div>
+                <div style="display: flex; gap: 2px">
+                  <sc-for list="{{ k.ticks }}" as="tk" hint-placeholder-count="8">
+                    <div style="width: 2px; height: 8px; background: {{ tk.bg }}"></div>
+                  </sc-for>
+                </div>
+                <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.575 0.200 47)">{{ k.sim }} · {{ k.gap }}</div>
+              </div>
+              <div style="font: 400 15px/1.38 Newsreader, serif; font-style: italic; color: oklch(0.235 0.022 62); text-wrap: pretty">{{ k.title }}</div>
+              <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.15em; color: oklch(0.602 0.015 76); margin-top: 7px">{{ k.meta }}</div>
+            </div>
+          </sc-for>
+
+          <div style="display: flex; align-items: center; gap: 10px; margin: 26px 0 12px">
+            <div style="font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.520 0.150 128)">IDEAS FILED</div>
+            <div style="flex: 1; height: 1px; background: oklch(0.520 0.150 128 / 0.28)"></div>
+          </div>
+          <sc-for list="{{ ideas }}" as="i" hint-placeholder-count="4">
+            <div onClick="{{ i.onOpen }}" style="padding: 11px 0; border-top: 1px solid oklch(0.836 0.015 81); cursor: pointer; display: flex; gap: 10px">
+              <div style="width: 4px; height: 4px; border-radius: 99px; background: {{ i.dot }}; margin-top: 7px; flex: 0 0 auto"></div>
+              <div>
+                <div style="font: 400 13px/1.45 Newsreader, serif; font-style: italic; color: oklch(0.300 0.020 64); text-wrap: pretty">{{ i.note }}</div>
+                <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.622 0.015 77); margin-top: 6px">{{ i.shortProv }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid oklch(0.782 0.016 80); background: oklch(0.948 0.016 84); padding: 12px 30px 14px; display: flex; align-items: center; gap: 24px">
+        <div style="display: flex; align-items: center; gap: 16px">
+          <div onClick="{{ det.back15 }}" style="font: 400 9px/1 'IBM Plex Mono', monospace; color: oklch(0.440 0.018 70); cursor: pointer">↺15</div>
+          <div onClick="{{ det.toggle }}" style="width: 34px; height: 34px; border-radius: 99px; background: oklch(0.575 0.200 47); display: flex; align-items: center; justify-content: center; cursor: pointer">
+            <div style="font: 500 11px/1 'IBM Plex Mono', monospace; color: oklch(0.985 0.010 88)">{{ det.playIcon }}</div>
+          </div>
+          <div onClick="{{ det.fwd15 }}" style="font: 400 9px/1 'IBM Plex Mono', monospace; color: oklch(0.440 0.018 70); cursor: pointer">15↻</div>
+        </div>
+        <div style="font: 400 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.1em; color: oklch(0.282 0.020 64); width: 96px">{{ det.tLabel }}</div>
+        <div style="flex: 1; display: flex; align-items: flex-end; gap: 1px; height: 22px; cursor: pointer" onClick="{{ det.onScrubMid }}">
+          <sc-for list="{{ det.wave }}" as="w" hint-placeholder-count="48">
+            <div style="flex: 1; height: {{ w.h }}; background: {{ w.bg }}"></div>
+          </sc-for>
+        </div>
+        <div onClick="{{ det.cycleSpeed }}" style="font: 500 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.1em; color: oklch(0.575 0.200 47); cursor: pointer; width: 46px; text-align: right">{{ det.speedLabel }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="margin-bottom: 40px">
+  <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px">
+    <div style="font: 500 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.575 0.200 47)">04</div>
+    <div style="font: 500 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.420 0.018 68)">STATES · WHAT THE INSTRUMENT SAYS WHEN IT HAS NOTHING</div>
+  </div>
+
+  <div style="display: flex; gap: 22px">
+    <div style="flex: 0 0 auto; width: 390px; height: 480px; background: oklch(0.976 0.010 86); border: 1px solid oklch(0.782 0.016 80); border-radius: 18px; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 8px; padding: 16px 18px 12px; border-bottom: 1px solid oklch(0.846 0.014 82)">
+        <div style="width: 5px; height: 5px; border-radius: 99px; background: oklch(0.575 0.200 47); animation: recpulse 1.1s ease-in-out infinite"></div>
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.575 0.200 47)">SYNCING · 3 OF 4 MEMOS · SPLITTING THREADS</div>
+      </div>
+      <div style="padding: 18px">
+        <div style="height: 1px; background: oklch(0.806 0.016 81); margin-bottom: 20px; position: relative; overflow: hidden">
+          <div style="position: absolute; left: 0; top: 0; height: 1px; width: 68%; background: oklch(0.575 0.200 47); animation: shimmer 1.6s ease-in-out infinite"></div>
+        </div>
+        <div style="animation: shimmer 1.8s ease-in-out infinite">
+          <div style="width: 40%; height: 8px; background: oklch(0.806 0.016 81); margin-bottom: 14px"></div>
+          <div style="width: 86%; height: 15px; background: oklch(0.762 0.016 80); margin-bottom: 9px"></div>
+          <div style="width: 62%; height: 15px; background: oklch(0.762 0.016 80); margin-bottom: 16px"></div>
+          <div style="display: flex; gap: 5px; margin-bottom: 30px">
+            <div style="width: 22%; height: 3px; background: oklch(0.816 0.015 81)"></div>
+            <div style="width: 14%; height: 3px; background: oklch(0.816 0.015 81)"></div>
+            <div style="width: 31%; height: 3px; background: oklch(0.816 0.015 81)"></div>
+          </div>
+          <div style="width: 34%; height: 8px; background: oklch(0.806 0.016 81); margin-bottom: 14px"></div>
+          <div style="width: 78%; height: 15px; background: oklch(0.762 0.016 80); margin-bottom: 9px"></div>
+          <div style="width: 54%; height: 15px; background: oklch(0.762 0.016 80); margin-bottom: 16px"></div>
+          <div style="display: flex; gap: 5px">
+            <div style="width: 18%; height: 3px; background: oklch(0.816 0.015 81)"></div>
+            <div style="width: 26%; height: 3px; background: oklch(0.816 0.015 81)"></div>
+          </div>
+        </div>
+        <div style="margin-top: 34px; font: 400 9px/1.9 'IBM Plex Mono', monospace; letter-spacing: 0.14em; color: oklch(0.642 0.014 77)">TRANSCRIBING 09:14 SAT · 8:42<br />EMBEDDING 41 THREADS AGAINST 1,208</div>
+      </div>
+    </div>
+
+    <div style="flex: 0 0 auto; width: 390px; height: 480px; background: oklch(0.976 0.010 86); border: 1px solid oklch(0.782 0.016 80); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; gap: 8px; padding: 16px 18px 12px; border-bottom: 1px solid oklch(0.846 0.014 82)">
+        <div style="width: 5px; height: 5px; border-radius: 99px; background: oklch(0.500 0.110 178)"></div>
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.520 0.016 73)">FILTER · REFERENCE · 0 RESULTS</div>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center">
+        <div style="width: 54px; height: 54px; border: 1px solid oklch(0.772 0.016 80); border-radius: 99px; display: flex; align-items: center; justify-content: center; margin-bottom: 22px">
+          <div style="width: 6px; height: 6px; border-radius: 99px; background: oklch(0.722 0.030 62)"></div>
+        </div>
+        <div style="font: 400 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.22em; color: oklch(0.582 0.015 75); margin-bottom: 14px">NOTHING FILED HERE YET</div>
+        <div style="font: 300 17px/1.5 Newsreader, serif; font-style: italic; color: oklch(0.340 0.020 66); margin-bottom: 12px; max-width: 26ch; text-wrap: pretty">The recorder has been quiet in this drawer.</div>
+        <div style="font: 300 13px/1.6 Newsreader, serif; color: oklch(0.542 0.018 74); max-width: 30ch; text-wrap: pretty">Hold the top button for two seconds and start talking. It files itself.</div>
+      </div>
+      <div style="padding: 16px 18px 22px; border-top: 1px solid oklch(0.846 0.014 82); display: flex; gap: 9px; justify-content: center">
+        <div style="padding: 10px 14px; border: 1px solid oklch(0.752 0.016 80); font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.420 0.018 68)">CLEAR FILTER</div>
+        <div style="padding: 10px 14px; border: 1px solid oklch(0.575 0.200 47 / 0.50); font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.575 0.200 47)">● REC ON DEVICE</div>
+      </div>
+    </div>
+
+    <div style="flex: 0 0 auto; position: relative; width: 390px; height: 480px; background: oklch(0.976 0.010 86); border: 1px solid oklch(0.782 0.016 80); border-radius: 18px; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 8px; padding: 16px 18px 12px; border-bottom: 1px solid oklch(0.540 0.190 34 / 0.35); background: oklch(0.540 0.190 34 / 0.07)">
+        <div style="width: 5px; height: 5px; border-radius: 99px; background: oklch(0.540 0.190 34)"></div>
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.500 0.170 36)">SYNC FAILED · 4 MEMOS HELD ON DEVICE</div>
+      </div>
+      <div style="padding: 18px; opacity: 0.3; filter: saturate(0.4)">
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.15em; color: oklch(0.520 0.016 73); margin-bottom: 8px">09:05 · 6:31 · 4 THREADS</div>
+        <div style="font: 400 17px/1.32 Newsreader, serif; font-style: italic; color: oklch(0.282 0.020 64); margin-bottom: 16px">Sunday call with Nadia — firmware and the battery cliff</div>
+        <div style="font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.15em; color: oklch(0.520 0.016 73); margin-bottom: 8px">07:58 · 1:34 · 2 THREADS</div>
+        <div style="font: 400 17px/1.32 Newsreader, serif; font-style: italic; color: oklch(0.282 0.020 64)">Ship list before the Friday demo</div>
+      </div>
+      <div style="position: absolute; left: 18px; right: 18px; bottom: 22px; background: oklch(0.966 0.012 85); border: 1px solid oklch(0.540 0.190 34 / 0.40); padding: 16px 16px 15px">
+        <div style="font: 500 8px/1 'IBM Plex Mono', monospace; letter-spacing: 0.2em; color: oklch(0.500 0.170 36); margin-bottom: 11px">ERR_UPLINK_TIMEOUT</div>
+        <div style="font: 300 16px/1.45 Newsreader, serif; font-style: italic; color: oklch(0.250 0.022 62); margin-bottom: 10px; text-wrap: pretty">Nothing is lost — the recorder is still holding it.</div>
+        <div style="font: 400 9px/1.8 'IBM Plex Mono', monospace; letter-spacing: 0.12em; color: oklch(0.562 0.016 74); margin-bottom: 15px">LAST CONTACT 4H 12M AGO · 61 MB QUEUED<br />THREAD SPLITTING PAUSED · TRANSCRIPTS INTACT</div>
+        <div style="display: flex; gap: 9px">
+          <div style="flex: 1; text-align: center; padding: 11px; border: 1px solid oklch(0.500 0.170 36 / 0.6); font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.480 0.170 36)">RETRY UPLINK</div>
+          <div style="padding: 11px 14px; border: 1px solid oklch(0.772 0.016 80); font: 500 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em; color: oklch(0.470 0.018 71)">LOG</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;spanStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;bars&quot;,&quot;ribbon&quot;,&quot;ticks&quot;],&quot;default&quot;:&quot;bars&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Thread timeline&quot;,&quot;label&quot;:&quot;Span treatment&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;editorial&quot;,&quot;compact&quot;],&quot;default&quot;:&quot;editorial&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;List&quot;,&quot;label&quot;:&quot;List density&quot;},&quot;recPulse&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Instrument&quot;,&quot;label&quot;:&quot;REC light pulses&quot;},&quot;grain&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.06,&quot;min&quot;:0,&quot;max&quot;:0.16,&quot;step&quot;:0.01,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Instrument&quot;,&quot;label&quot;:&quot;Film grain&quot;}}">
+const B = {
+  journal: { l: 0.60, c: 0.15, h: 68, n: 'JOURNAL' },
+  idea: { l: 0.52, c: 0.15, h: 128, n: 'IDEA' },
+  task: { l: 0.50, c: 0.13, h: 222, n: 'TASK' },
+  meeting: { l: 0.46, c: 0.16, h: 300, n: 'MEETING' },
+  'project-note': { l: 0.55, c: 0.16, h: 42, n: 'PROJECT-NOTE' },
+  reference: { l: 0.50, c: 0.11, h: 178, n: 'REFERENCE' },
+  misc: { l: 0.58, c: 0.012, h: 70, n: 'MISC' }
+};
+const AMBER = 'oklch(0.575 0.200 47)';
+const hue = (b, a) => { const x = B[b] || B.misc; return 'oklch(' + x.l + ' ' + x.c + ' ' + x.h + ' / ' + (a === undefined ? 1 : a) + ')'; };
+const fmt = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const pct = (v, d) => Math.max(0.7, (v / d) * 100).toFixed(2) + '%';
+const left = (v, d) => ((v / d) * 100).toFixed(2) + '%';
+
+const REC = [
+  { id: 'r2', b: 'idea', g: 'Today', dl: 'SUN 16 AUG', clock: '11:47', dur: 138,
+    title: 'A show about the things people never said out loud',
+    sum: 'Half-formed podcast format that fell out while doing the dishes. One guest, one sentence they never got to say, thirty minutes on why.',
+    tags: ['podcast', 'format', 'confession'],
+    actions: [{ text: 'Write the one-paragraph pitch before it cools', done: false }, { text: 'Ask Ravi if he would be guest zero', done: false }],
+    threads: [
+      { l: 'The format is one unsent sentence', s: 'Guest brings a single line they never said; the episode is the archaeology around it.', sp: [[4, 62]], e: ['podcast', 'format'], idea: 'Pilot: “The Unsent Line.” Guest reads one sentence they never said aloud, then we spend thirty minutes on why it stayed inside.' },
+      { l: 'Why I keep circling confession as a form', s: 'Notices this is the third memo this month about saying the hard thing late.', sp: [[62, 104]], e: ['confession'],
+        links: [{ rid: 'r1', t: 'Accepting the new identity — Saturday morning reflection', d: 'Yesterday', clock: '09:14', sim: 0.81, gap: '1 DAY', shared: ['confession', 'Ravi'], q: 'Nobody corrected me. Ravi just let it sit there, which was kind.', label: 'The old title is still in my mouth' }] },
+      { l: 'Do not make it a business yet', s: 'Wants to protect it from becoming a launch. Two episodes, no feed, no name.', sp: [[104, 138]], e: ['restraint'] }
+    ],
+    tx: [[4, 'Dishes, 11:47, and I have got a format in my head so I am going to say it before it evaporates.'], [22, 'One guest. One sentence they never said out loud. That is the whole show.'], [48, 'The episode is not the sentence, it is the thirty minutes of why it stayed in.'], [66, 'Third time this month I have circled this. Saying the hard thing too late.'], [92, 'Which is the same thing I was doing yesterday morning about the job, honestly.'], [110, 'Do not turn it into a business yet. Two episodes. No feed, no name, no logo.']] },
+
+  { id: 'r3', b: 'meeting', g: 'Today', dl: 'SUN 16 AUG', clock: '09:05', dur: 391,
+    title: 'Sunday call with Nadia — firmware and the battery cliff',
+    sum: 'Battery drops off a cliff below 12% and the recorder stops writing mid-memo. Nadia wants a hard stop with a spoken warning instead.',
+    tags: ['hardware', 'nadia', 'firmware'],
+    actions: [{ text: 'Send Nadia the three truncated memo files', done: true }, { text: 'Spec the spoken low-battery warning', done: false }, { text: 'Decide: hard stop at 12% or degrade sample rate', done: false }],
+    threads: [
+      { l: 'Memos truncate below twelve percent', s: 'Three memos ended mid-sentence last week; the write buffer never flushed.', sp: [[10, 96], [204, 248]], e: ['Nadia', 'battery', 'buffer'] },
+      { l: 'She wants the device to speak, not blink', s: 'A blinking LED is invisible when the recorder is under a jacket.', sp: [[96, 168]], e: ['Nadia', 'LED', 'attention'], idea: 'Short piece: hardware that talks to you is a different relationship than hardware that blinks at you.',
+        links: [{ rid: 'r7', t: 'Book notes — attention as a moral act', d: 'Wednesday', clock: '21:30', sim: 0.72, gap: '4 DAYS', shared: ['attention', 'recorder'], q: 'And the uncomfortable one: this thing I am building remembers so I do not have to notice.', label: 'A recorder is an attention prosthetic' }] },
+      { l: 'Sample rate as a graceful failure', s: 'Drop to 16kHz below 15% rather than stopping — transcripts survive worse audio.', sp: [[168, 204], [248, 320]], e: ['16kHz', 'transcription'] },
+      { l: 'Nobody is testing this in the rain', s: 'Both realise the whole test corpus is recorded indoors, seated.', sp: [[320, 391]], e: ['field test'] }
+    ],
+    tx: [[10, 'Nadia, seven in the morning your time, thank you for this.'], [40, 'So three memos last week just stop. Mid-sentence. And they are all under twelve percent.'], [96, 'She says the LED is useless — the thing lives under a jacket, nobody sees it blink.'], [150, 'Her instinct is: let the device speak. Two words, low battery, into the recording itself.'], [200, 'Alternative is degrading gracefully. Sixteen kilohertz, ugly audio, but the transcript survives.'], [300, 'And then she says the thing that stung: none of our test recordings are made outdoors.']] },
+
+  { id: 'r8', b: 'task', g: 'Today', dl: 'SUN 16 AUG', clock: '07:58', dur: 94,
+    title: 'Ship list before the Friday demo',
+    sum: 'Fast dictation of what has to be true by Friday. Mostly the thread merge bug and the empty state nobody has drawn yet.',
+    tags: ['ship', 'demo'],
+    actions: [{ text: 'Fix span merge across the 40-minute gap', done: false }, { text: 'Draw the empty state for a filtered bucket', done: false }, { text: 'Kill the second sync spinner', done: true }, { text: 'Record one demo memo outdoors', done: false }],
+    threads: [
+      { l: 'Merge bug is the only real blocker', s: 'Everything else on the list is cosmetic; this one makes the map lie.', sp: [[3, 44]], e: ['merge', 'spans'],
+        links: [{ rid: 'r6', t: 'Span merging is wrong when a thread resumes after forty minutes', d: 'Yesterday', clock: '14:12', sim: 0.94, gap: '18 HOURS', shared: ['merge', 'spans'], q: 'If it resumes after forty minutes it is not a new thread, it is the same one coming back.', label: 'Forty minutes is not a new thread' }] },
+      { l: 'Demo should be recorded outdoors', s: 'Wants the demo memo to have wind in it, to prove it is a field instrument.', sp: [[44, 94]], e: ['demo'], idea: 'Demo framing: open with a memo that has wind and footsteps in it. Sell it as field equipment, not an app.' }
+    ],
+    tx: [[3, 'Quick list, walking to the kettle. Friday.'], [18, 'One: the merge bug. That is the only real blocker, the rest is paint.'], [46, 'Two: record the demo memo outside. I want wind in it. Footsteps.'], [70, 'It has to feel like equipment, not a productivity app.']] },
+
+  { id: 'r1', b: 'journal', g: 'Yesterday', dl: 'SAT 15 AUG', clock: '09:14', dur: 522,
+    title: 'Accepting the new identity — Saturday morning reflection',
+    sum: 'Still introducing himself with the old job in the present tense, three months out. Circles into whether a win means anything if there is nobody to tell.',
+    tags: ['identity', 'solitude', 'morning'],
+    actions: [{ text: 'Call Ravi back — he has asked twice', done: false }, { text: 'Write the “no one to tell” piece while it still hurts', done: false }, { text: 'Book the Tuesday walk again', done: true }],
+    threads: [
+      { l: 'The old title is still in my mouth', s: 'Says “I am at Kestrel” in the present tense and nobody corrects him.', sp: [[6, 96], [214, 262]], e: ['Kestrel Labs', 'Ravi', 'confession'],
+        links: [{ rid: 'r4', t: 'Accepting the next stage of life — Tuesday walk', d: 'Tuesday', clock: '07:40', sim: 0.90, gap: '4 DAYS', shared: ['identity', 'Kestrel Labs'], q: 'I keep grieving a building I did not even like being inside.', label: 'Grieving a building I did not like' }] },
+      { l: 'No one to share the wins with — are the big dogs lonely?', s: 'Wonders who the people he admires call at eleven at night, and whether they call anyone.', sp: [[96, 214], [402, 468]], e: ['solitude', 'ambition'], idea: 'Essay: The Unshared Win. Who do you call at 11pm when the thing finally works and nobody was watching?',
+        links: [{ rid: 'r9', t: 'The fig tree finally took — evening in the garden', d: 'Thursday', clock: '19:55', sim: 0.77, gap: '2 DAYS', shared: ['solitude', 'patience'], q: 'I told the tree. That is where we are at. I told the tree.', label: 'I told the tree about the win' }] },
+      { l: 'Mum’s voice when I said I quit', s: 'She paused for two seconds and then said “good”, and he has replayed the pause not the word.', sp: [[262, 330]], e: ['Mum'] },
+      { l: 'Six weeks of runway math, again', s: 'Runs the same arithmetic he ran on Thursday and gets the same answer.', sp: [[330, 402]], e: ['runway', 'savings'] },
+      { l: 'The garden as proof that patience works', s: 'Uses the tomatoes as evidence against his own impatience.', sp: [[468, 522]], e: ['tomatoes', 'patience'] }
+    ],
+    tx: [[6, 'Saturday. Coffee is on. The light is doing that thing on the west wall.'], [24, 'I introduced myself last night and I said “I am at Kestrel.” Present tense. Three months out.'], [42, 'Nobody corrected me. Ravi just let it sit there, which was kind.'], [58, 'I think the title was load-bearing. Take it out and the sentence about who I am collapses.'], [78, 'And the honest version is: I miss being explainable at parties.'], [98, 'The other thing. The thing I do not say.'], [116, 'The work went well this week. Really well. And there was nobody to tell.'], [138, 'Not nobody. I could have called five people. But telling is different from being seen.'], [162, 'So I sat with it and it curdled a bit, and then I felt ridiculous for it curdling.'], [186, 'Which makes me wonder — the people I look up to, the big dogs. Are they lonely?'], [204, 'Do they call somebody at eleven at night, or have they just made peace with the quiet?'], [220, 'Back to the title thing for a second, because it is the same wound.'], [244, 'Being at Kestrel meant a stranger could place me in about four seconds.'], [266, 'When I told Mum I quit, she paused for two seconds and then said “good”.'], [290, 'I have replayed the pause, not the word. Two seconds is a long time from your mother.'], [312, 'She meant it. I know she meant it. I am still doing forensics on two seconds of silence.'], [334, 'Okay, money. Six weeks of comfortable, four months of uncomfortable, then I get a job.'], [364, 'I did this exact arithmetic on Thursday and got the same number, which should be reassuring.'], [392, 'It is reassuring for about an hour and then it is not.'], [410, 'Coming back to the unshared thing, because I do not think I finished it.'], [434, 'Maybe the point is that a win nobody witnessed is still a win. It just does not echo.'], [456, 'And I have built a whole machine for making things echo, which is not lost on me.'], [474, 'Anyway. The tomatoes. I planted them badly, late, in bad soil, and they came anyway.'], [500, 'Patience worked and I was not even watching. Put that on the wall.']] },
+
+  { id: 'r6', b: 'project-note', g: 'Yesterday', dl: 'SAT 15 AUG', clock: '14:12', dur: 245,
+    title: 'Span merging is wrong when a thread resumes after forty minutes',
+    sum: 'The splitter opens a new thread whenever a gap exceeds thirty minutes, which shreds long meandering memos into duplicates.',
+    tags: ['threads', 'splitter', 'bug'],
+    actions: [{ text: 'Raise gap ceiling and test on the Tuesday walk memo', done: false }, { text: 'Add a “resumed” marker to the span model', done: true }],
+    threads: [
+      { l: 'Forty minutes is not a new thread', s: 'Long-form memos leave and resume a subject; the gap heuristic mistakes that for a new one.', sp: [[8, 92], [160, 210]], e: ['merge', 'spans', 'heuristic'],
+        links: [{ rid: 'r4', t: 'Accepting the next stage of life — Tuesday walk', d: 'Tuesday', clock: '07:40', sim: 0.86, gap: '4 DAYS', shared: ['spans'], q: 'I am back on the Kestrel thing, twenty minutes later, sorry.', label: 'Grieving a building I did not like' }] },
+      { l: 'Similarity should beat elapsed time', s: 'Match on embedding distance to the open thread before opening a new one.', sp: [[92, 160]], e: ['embedding', 'similarity'] },
+      { l: 'The UI already tells the truth', s: 'The dotted hold in the span map is honest; the data model is the liar.', sp: [[210, 245]], e: ['span map'], idea: 'Note to self: the interface was right before the model was. Worth writing up — drawing the data honestly exposed the bug.' }
+    ],
+    tx: [[8, 'Looking at the Tuesday walk memo and the splitter has made nine threads out of about six.'], [40, 'Because I left the Kestrel subject for forty-one minutes and came back to it.'], [96, 'The fix is obvious: compare to the open threads by embedding before you open a new one.'], [164, 'Elapsed time is the wrong signal. A walk is not a meeting.'], [214, 'Funny thing is the span map already draws the dotted hold correctly. The picture was honest first.']] },
+
+  { id: 'r5', b: 'misc', g: 'Yesterday', dl: 'SAT 15 AUG', clock: '18:40', dur: 47,
+    title: 'Errands, half-thoughts, and the dentist',
+    sum: 'Forty-seven seconds of nothing much: dentist, lemons, and a sentence about the light he did not finish.',
+    tags: ['errands'],
+    actions: [{ text: 'Dentist — Thursday, 3pm', done: false }],
+    threads: [
+      { l: 'Dentist, lemons, batteries', s: 'A list, spoken while walking, with one unfinished sentence at the end.', sp: [[2, 47]], e: ['dentist', 'lemons'] }
+    ],
+    tx: [[2, 'Dentist Thursday three. Lemons. Batteries, the small ones.'], [26, 'The light on the way home was — never mind, it is gone.']] },
+
+  { id: 'r4', b: 'journal', g: 'This week', dl: 'TUE 11 AUG', clock: '07:40', dur: 622,
+    title: 'Accepting the next stage of life — Tuesday walk',
+    sum: 'A long walking memo that leaves and returns to the same subject four times. The pipeline found nine threads; six are honest.',
+    tags: ['identity', 'walk', 'grief'],
+    actions: [{ text: 'Stop describing the last three years as “the Kestrel years”', done: false }, { text: 'Text Priya back about the co-working desk', done: true }],
+    threads: [
+      { l: 'Grieving a building I did not like', s: 'Realises the grief is for the routine and the badge, not the work.', sp: [[12, 108], [318, 402], [520, 560]], e: ['Kestrel Labs', 'identity', 'grief'],
+        links: [{ rid: 'r1', t: 'Accepting the new identity — Saturday morning reflection', d: 'Saturday', clock: '09:14', sim: 0.90, gap: '4 DAYS', shared: ['identity', 'Kestrel Labs'], q: 'I think the title was load-bearing. Take it out and the sentence about who I am collapses.', label: 'The old title is still in my mouth' }] },
+      { l: 'The next stage has no name yet', s: 'Cannot describe the current phase without referring to the previous one.', sp: [[108, 176]], e: ['identity'], idea: 'Essay: phases of a life you can only name in retrospect — why we describe the present as “post-something”.' },
+      { l: 'Walking is where the thinking is allowed', s: 'Notices he only reaches these conclusions in motion, never at a desk.', sp: [[176, 232]], e: ['walking'] },
+      { l: 'Priya’s offer of a desk', s: 'Turning it over: the desk would solve loneliness but reintroduce a commute.', sp: [[232, 280]], e: ['Priya', 'co-working'] },
+      { l: 'Money is a two-hour problem, not a life problem', s: 'Reframes runway anxiety as a bounded task with a date on it.', sp: [[280, 318]], e: ['runway'] },
+      { l: 'The park bench with the plaque', s: 'A stranger’s memorial bench becomes a whole argument about being remembered.', sp: [[402, 470]], e: ['bench', 'memory'], idea: 'Short piece about memorial benches as the smallest possible public archive of a private life.' },
+      { l: 'Nobody is coming to certify this', s: 'No committee will confirm he made the right call; that is the job now.', sp: [[470, 520]], e: ['authority'] },
+      { l: 'What I would tell someone else', s: 'Gives himself advice in the second person and hears how kind it sounds.', sp: [[560, 596]], e: ['self-talk'] },
+      { l: 'Battery warning cut the ending off', s: 'Memo ends mid-sentence at 12% battery.', sp: [[596, 622]], e: ['battery'],
+        links: [{ rid: 'r3', t: 'Sunday call with Nadia — firmware and the battery cliff', d: 'Today', clock: '09:05', sim: 0.88, gap: '5 DAYS', shared: ['battery'], q: 'So three memos last week just stop. Mid-sentence. And they are all under twelve percent.', label: 'Memos truncate below twelve percent' }] }
+    ],
+    tx: [[12, 'Tuesday, twenty to eight, out past the allotments.'], [46, 'I have been grieving Kestrel and I did not even like the building.'], [110, 'The problem is I cannot say what I am now without saying what I was.'], [180, 'And I only get to these sentences when I am walking. Never at the desk.'], [236, 'Priya offered me a desk at hers. Solves the quiet, reintroduces the commute.'], [284, 'Money: it is a two-hour problem with a date on it, not a personality trait.'], [322, 'I am back on the Kestrel thing, twenty minutes later, sorry.'], [406, 'There is a bench here with a plaque. Someone loved this view. That is the whole archive.'], [474, 'Nobody is coming to certify this decision. There is no committee. That is the job now.'], [524, 'Kestrel again, briefly, and then I will let it go for the week.'], [564, 'If a friend told me all this I would say: you are three months in, be kind.'], [600, 'Warning light. Okay, I will finish this at the—']] },
+
+  { id: 'r7', b: 'reference', g: 'This week', dl: 'WED 12 AUG', clock: '21:30', dur: 192,
+    title: 'Book notes — attention as a moral act',
+    sum: 'Reading aloud two passages about noticing, then arguing with the second one.',
+    tags: ['reading', 'attention'],
+    actions: [{ text: 'Find the Weil quote the author is paraphrasing', done: false }],
+    threads: [
+      { l: 'Attention is the rarest form of generosity', s: 'Reads the passage twice and sits with it.', sp: [[6, 78]], e: ['attention', 'generosity'] },
+      { l: 'Where the argument gets soft', s: 'Thinks the second chapter mistakes aesthetics for ethics.', sp: [[78, 140]], e: ['ethics'] },
+      { l: 'A recorder is an attention prosthetic', s: 'Connects the reading to what he is building, uneasily.', sp: [[140, 192]], e: ['recorder', 'attention'], idea: 'Thread to write: is a device that remembers for you an aid to attention or a licence to stop paying it?' }
+    ],
+    tx: [[6, 'Chapter four. He says attention is the rarest and purest form of generosity.'], [80, 'Second chapter is softer. I think he is doing aesthetics and calling it ethics.'], [144, 'And the uncomfortable one: this thing I am building remembers so I do not have to notice.']] },
+
+  { id: 'r9', b: 'journal', g: 'This week', dl: 'THU 13 AUG', clock: '19:55', dur: 320,
+    title: 'The fig tree finally took — evening in the garden',
+    sum: 'The fig has new growth after two years of nothing. Ends up telling the tree about a good week because there was nobody else in the garden.',
+    tags: ['garden', 'patience', 'solitude'],
+    actions: [{ text: 'Feed the fig in September, not before', done: false }, { text: 'Take a photo every Thursday', done: true }],
+    threads: [
+      { l: 'Two years of nothing, then this', s: 'New growth on wood he had written off in spring.', sp: [[8, 88]], e: ['fig', 'patience'] },
+      { l: 'I told the tree about the win', s: 'Says the good news out loud in an empty garden and notices what that means.', sp: [[88, 172], [252, 320]], e: ['solitude', 'patience'], idea: 'Piece: the things we say out loud to plants, pets and voice recorders because the alternative is not saying them.',
+        links: [{ rid: 'r1', t: 'Accepting the new identity — Saturday morning reflection', d: 'Saturday', clock: '09:14', sim: 0.77, gap: '2 DAYS', shared: ['solitude', 'patience'], q: 'The work went well this week. Really well. And there was nobody to tell.', label: 'No one to share the wins with — are the big dogs lonely?' }] },
+      { l: 'Deadheading as an excuse to stay out', s: 'Admits the jobs are invented to avoid going back inside.', sp: [[172, 252]], e: ['garden'] }
+    ],
+    tx: [[8, 'The fig took. Two years of a stick in a pot and there is new growth at the second node.'], [92, 'I said out loud, to the tree, that it had been a good week.'], [130, 'I told the tree. That is where we are at. I told the tree.'], [176, 'Then I deadheaded things that did not need it so I did not have to go in.'], [258, 'It is not sad exactly. It is just very quiet out here and I noticed the quiet.']] }
+];
+
+const DAYS = [
+  { dl: 'TUE 11 AUG', s: 'TUE 11' }, { dl: 'WED 12 AUG', s: 'WED 12' }, { dl: 'THU 13 AUG', s: 'THU 13' },
+  { dl: 'FRI 14 AUG', s: 'FRI 14' }, { dl: 'SAT 15 AUG', s: 'SAT 15' }, { dl: 'SUN 16 AUG', s: 'SUN 16' }
+];
+const SEAMS = [
+  { n: 'The old title, and who I am without it', note: 'Left on Tuesday, picked up Saturday, still in his mouth on Sunday.', k: ['r1:0', 'r4:0', 'r2:1'], days: [0, 4, 5], peak: '0.90' },
+  { n: 'Wins with nobody in the room', note: 'The same ache twice: once at a desk, once told to a tree.', k: ['r1:1', 'r9:1'], days: [2, 4], peak: '0.77' },
+  { n: 'Patience I did not supervise', note: 'Tomatoes and a fig used as evidence against his own hurry.', k: ['r1:4', 'r9:0'], days: [2, 4], peak: '0.74' },
+  { n: 'The device has to tell the truth', note: 'A battery cliff, a merge bug, a ship list — one worry wearing three coats.', k: ['r3:0', 'r6:0', 'r8:0', 'r4:8'], days: [0, 4, 5], peak: '0.94' },
+  { n: 'Attention as a moral act', note: 'Reading on Wednesday came back as a hardware argument on Sunday.', k: ['r7:2', 'r3:1'], days: [1, 5], peak: '0.72' }
+];
+const ORDER = ['Today', 'Yesterday', 'This week'];
+const BUCKET_KEYS = ['journal', 'idea', 'task', 'meeting', 'project-note', 'reference', 'misc'];
+const waveOf = (r) => { const out = []; for (let i = 0; i < 60; i++) { const x = i / 60; const v = 0.3 + 0.7 * Math.abs(Math.sin(x * 9.3 + r.dur % 7)) * Math.abs(Math.cos(x * 3.9 + 1.1)) + 0.14 * ((i * 37 % 11) / 11); out.push(Math.max(3, Math.min(22, v * 21))); } return out; };
+
+class Component extends DCLogic {
+  state = { screen: 'list', sel: 'r1', bucket: 'all', q: '', t: 118, playing: false, speed: 1, thread: 1, echo: null, seam: null };
+
+  componentDidMount() {
+    this.timer = setInterval(() => {
+      if (!this.state.playing) return;
+      this.setState(s => {
+        const d = this.get(s.sel).dur;
+        const nt = s.t + 0.2 * s.speed;
+        return nt >= d ? { t: d, playing: false } : { t: nt };
+      });
+    }, 200);
+  }
+  componentWillUnmount() { clearInterval(this.timer); }
+  get(id) { return REC.find(r => r.id === id) || REC[0]; }
+  open(id) { this.setState({ screen: 'detail', sel: id, t: 0, playing: false, thread: 0, echo: null }); }
+  openThread(id, ti) { this.setState({ screen: 'detail', sel: id, thread: ti, t: this.get(id).threads[ti].sp[0][0], playing: false, echo: null }); }
+
+  spanLabel(th) { return th.sp.map(s => fmt(s[0]) + '–' + fmt(s[1])).join(' · '); }
+
+  segs(r, style) {
+    const out = [], n = r.threads.length, D = r.dur;
+    if (style === 'ribbon') {
+      const H = Math.max(2, Math.min(4.2, 24 / n));
+      r.threads.forEach((th, i) => th.sp.forEach(sp => out.push({ left: left(sp[0], D), width: pct(sp[1] - sp[0], D), top: (i * (H + 0.7)).toFixed(1) + 'px', height: H.toFixed(1) + 'px', bg: hue(r.b, 0.95 - i * 0.06), r: '0px', bt: 'none' })));
+      return out;
+    }
+    if (style === 'ticks') {
+      r.threads.forEach((th, i) => th.sp.forEach(sp => {
+        const L = (sp[0] / D) * 100, W = ((sp[1] - sp[0]) / D) * 100;
+        const k = Math.min(48, Math.max(1, Math.round(W / 1.5)));
+        for (let j = 0; j < k; j++) out.push({ left: (L + W * (j + 0.5) / k).toFixed(2) + '%', width: '1px', top: '0px', height: '16px', bg: hue(r.b, 0.9 - i * 0.055), r: '0px', bt: 'none' });
+      }));
+      return out;
+    }
+    const lane = n <= 5 ? 3.6 : 2.5, bar = n <= 5 ? 2 : 1.5;
+    r.threads.forEach((th, i) => {
+      const top = i * lane;
+      th.sp.forEach(sp => out.push({ left: left(sp[0], D), width: pct(sp[1] - sp[0], D), top: top.toFixed(1) + 'px', height: bar + 'px', bg: hue(r.b, 0.95 - i * 0.06), r: '1px', bt: 'none' }));
+      for (let j = 1; j < th.sp.length; j++) {
+        const a = th.sp[j - 1][1], b = th.sp[j][0];
+        out.push({ left: left(a, D), width: pct(b - a, D), top: (top + bar / 2).toFixed(1) + 'px', height: '0px', bg: 'transparent', r: '0px', bt: '1px dotted ' + hue(r.b, 0.4) });
+      }
+    });
+    return out;
+  }
+  segH(r, style) {
+    const n = r.threads.length;
+    if (style === 'ticks') return 16;
+    if (style === 'ribbon') { const H = Math.max(2, Math.min(4.2, 24 / n)); return n * H + (n - 1) * 0.7; }
+    return n * (n <= 5 ? 3.6 : 2.5);
+  }
+  gapsOf(th, D) {
+    const out = [];
+    for (let j = 1; j < th.sp.length; j++) out.push({ left: left(th.sp[j - 1][1], D), width: pct(th.sp[j][0] - th.sp[j - 1][1], D) });
+    return out;
+  }
+  plate(W, H, padL, opts) {
+    const o = opts || {}, padR = 14, padT = 18, padB = 24, T0 = 420, T1 = 1350;
+    const colW = (W - padL - padR) / DAYS.length;
+    const colX = i => padL + colW * (i + 0.5);
+    const tY = m => padT + (m - T0) / (T1 - T0) * (H - padT - padB);
+    const seam = this.state.seam === null || this.state.seam === undefined ? null : SEAMS[this.state.seam];
+    const member = key => !seam || seam.k.indexOf(key) >= 0;
+    const cols = DAYS.map((d, i) => ({ x: colX(i).toFixed(1), label: o.shortDays ? d.s.slice(0, 1) + ' ' + d.s.slice(4) : d.s, ly: (H - 8).toFixed(1), y2: (H - padB + 4).toFixed(1) }));
+    const ticks = [];
+    for (let m = 420; m <= 1320; m += o.coarse ? 240 : 180) ticks.push({ y: tY(m).toFixed(1), top: tY(m).toFixed(1) + 'px', label: String(Math.floor(m / 60)).padStart(2, '0') + ':00', x2: (W - padR).toFixed(1) });
+    const bands = [], marks = [], nodes = {};
+    REC.forEach(r => {
+      const di = DAYS.findIndex(d => d.dl === r.dl); if (di < 0) return;
+      const start = parseInt(r.clock.slice(0, 2), 10) * 60 + parseInt(r.clock.slice(3), 10);
+      const bandH = Math.min(H * 0.30, 24 + (r.dur / 622) * (H * 0.19));
+      const y0 = tY(start), x = colX(di), n = r.threads.length;
+      const gapX = n > 6 ? 2.5 : 3.4, isSel = r.id === this.state.sel;
+      r.threads.forEach((th, ti) => {
+        const key = r.id + ':' + ti, tx = x + (ti - (n - 1) / 2) * gapX, on = member(key);
+        th.sp.forEach(sp => {
+          const a = y0 + (sp[0] / r.dur) * bandH, b = y0 + (sp[1] / r.dur) * bandH;
+          marks.push({ x: (tx - 0.95).toFixed(1), y: a.toFixed(1), w: '1.9', h: Math.max(1.8, b - a).toFixed(1),
+            c: hue(r.b, 0.95 - ti * 0.05), o: on ? (isSel ? 1 : 0.9) : 0.14, onPick: () => this.openThread(r.id, ti) });
+        });
+        nodes[key] = { x: tx, y: y0 + ((th.sp[0][0] + th.sp[0][1]) / 2 / r.dur) * bandH };
+      });
+      bands.push({ x: x.toFixed(1), y0: y0.toFixed(1), y1: (y0 + bandH).toFixed(1), dot: hue(r.b),
+        rule: isSel ? AMBER : 'oklch(0.806 0.016 81)', w: isSel ? '1.6' : '1',
+        lx: (x + 7).toFixed(1) + 'px', ly: (y0 - 4).toFixed(1) + 'px', label: r.clock, ink: isSel ? AMBER : 'oklch(0.642 0.014 77)',
+        onPick: () => this.open(r.id) });
+    });
+    const seen = {}, arcs = [], dots = [];
+    REC.forEach(r => r.threads.forEach((th, ti) => (th.links || []).forEach(lk => {
+      const other = this.get(lk.rid), tj = other.threads.findIndex(t => t.l === lk.label);
+      if (tj < 0) return;
+      const ka = r.id + ':' + ti, kb = lk.rid + ':' + tj, key = [ka, kb].sort().join('~');
+      if (seen[key]) return; seen[key] = 1;
+      const A = nodes[ka], Bn = nodes[kb]; if (!A || !Bn) return;
+      const dx = Bn.x - A.x, dy = Bn.y - A.y, L = Math.hypot(dx, dy) || 1;
+      const off = Math.min(H * 0.085, 11 + L * 0.075);
+      const cx = (A.x + Bn.x) / 2 + (-dy / L) * off, cy = (A.y + Bn.y) / 2 + (dx / L) * off;
+      const on = member(ka) && member(kb);
+      arcs.push({
+        d: 'M' + A.x.toFixed(1) + ' ' + A.y.toFixed(1) + ' Q' + cx.toFixed(1) + ' ' + cy.toFixed(1) + ' ' + Bn.x.toFixed(1) + ' ' + Bn.y.toFixed(1),
+        stroke: on && seam ? AMBER : 'oklch(0.502 0.016 72)',
+        w: (0.6 + (lk.sim - 0.7) * 2.6 + (on && seam ? 0.5 : 0)).toFixed(2),
+        o: on ? (seam ? 0.95 : 0.26 + (lk.sim - 0.7) * 1.3).toFixed(2) : 0.07
+      });
+      [A, Bn].forEach(p => dots.push({ x: p.x.toFixed(1), y: p.y.toFixed(1), r: on && seam ? '2.6' : '1.9', fill: on && seam ? AMBER : 'oklch(0.502 0.016 72)', o: on ? 0.85 : 0.1 }));
+    })));
+    return { W: W, H: H, cols: cols, ticks: ticks, bands: bands, marks: marks, arcs: arcs, dots: dots, box: '0 0 ' + W + ' ' + H };
+  }
+
+  ticks(sim) { const on = Math.round(sim * 8); const out = []; for (let i = 0; i < 8; i++) out.push({ bg: i < on ? AMBER : 'oklch(0.752 0.016 80)' }); return out; }
+
+  renderVals() {
+    const S = this.state, P = this.props;
+    const style = P.spanStyle || 'bars';
+    const dense = (P.density || 'editorial') === 'compact';
+    const q = (S.q || '').trim().toLowerCase();
+    const hay = r => (r.title + ' ' + r.sum + ' ' + r.tags.join(' ') + ' ' + r.threads.map(t => t.l + ' ' + t.s + ' ' + t.e.join(' ')).join(' ')).toLowerCase();
+    const list = REC.filter(r => (S.bucket === 'all' || r.b === S.bucket) && (!q || hay(r).indexOf(q) >= 0));
+
+    let k = 0;
+    const groups = ORDER.map(g => {
+      const rows = list.filter(r => r.g === g).map(r => {
+        const idx = k++;
+        const ic = r.threads.filter(t => t.idea).length;
+        return {
+          id: r.id, dot: hue(r.b), meta: r.clock + ' · ' + fmt(r.dur) + ' · ' + r.threads.length + (r.threads.length === 1 ? ' THREAD' : ' THREADS'),
+          title: r.title, sum: r.sum, dur: fmt(r.dur), segs: this.segs(r, style), h: this.segH(r, style) + 'px',
+          delay: (idx * 55) + 'ms', bg: r.id === S.sel ? 'oklch(0.912 0.022 81)' : 'transparent',
+          edge: r.id === S.sel ? AMBER : 'transparent', sumShow: dense ? 'none' : '-webkit-box',
+          ideaTag: ic ? '◆ ' + ic : '', ideaInk: 'oklch(0.520 0.150 128)', onOpen: () => this.open(r.id)
+        };
+      });
+      return { label: g.toUpperCase(), count: rows.length + (rows.length === 1 ? ' MEMO' : ' MEMOS'), rows };
+    }).filter(g => g.rows.length);
+
+    const counts = {}; REC.forEach(r => { counts[r.b] = (counts[r.b] || 0) + 1; });
+    const chips = [{ key: 'all', name: 'ALL', dot: 'oklch(0.235 0.022 62)', count: REC.length }].concat(BUCKET_KEYS.map(b => ({ key: b, name: B[b].n, dot: hue(b), count: counts[b] || 0 }))).map(c => ({
+      name: c.name, count: c.count, dot: c.dot,
+      line: S.bucket === c.key ? 'oklch(0.502 0.016 73)' : 'oklch(0.826 0.015 81)',
+      bg: S.bucket === c.key ? 'oklch(0.935 0.020 83)' : 'transparent',
+      ink: S.bucket === c.key ? 'oklch(0.215 0.022 61)' : 'oklch(0.64 0.016 76)',
+      onPick: () => this.setState({ bucket: c.key })
+    }));
+
+    const r = this.get(S.sel), D = r.dur;
+    const tNow = Math.min(S.t, D);
+    let ai = 0; r.tx.forEach((l, i) => { if (l[0] <= tNow) ai = i; });
+    const wave = waveOf(r);
+    const played = tNow / D;
+
+    const det = {
+      index: 'MEMO ' + String(REC.indexOf(r) + 1).padStart(2, '0') + ' / ' + String(REC.length).padStart(2, '0'),
+      bucket: B[r.b].n, dot: hue(r.b), dateLine: B[r.b].n + ' · ' + r.dl + ' · ' + r.clock + ' · ' + fmt(D),
+      title: r.title, sum: r.sum, tags: r.tags,
+      threadCount: r.threads.length + ' THREADS · ' + r.threads.reduce((a, t) => a + t.sp.length, 0) + ' SPANS',
+      openLabel: r.actions.filter(a => !a.done).length + ' OPEN',
+      durLabel: fmt(D), midLabel: fmt(D / 2), tLabel: fmt(tNow) + ' / ' + fmt(D),
+      playPct: (played * 100).toFixed(2) + '%', playIcon: S.playing ? '❙❙' : '▶', speedLabel: S.speed + '×',
+      toggle: () => this.setState({ playing: !S.playing }),
+      back15: () => this.setState({ t: Math.max(0, S.t - 15) }),
+      fwd15: () => this.setState({ t: Math.min(D, S.t + 15) }),
+      cycleSpeed: () => this.setState({ speed: S.speed === 1 ? 1.25 : S.speed === 1.25 ? 1.5 : S.speed === 1.5 ? 2 : 1 }),
+      onScrubMid: () => this.setState({ t: D * 0.5, playing: true }),
+      wave: wave.map((h, i) => ({ h: h.toFixed(1) + 'px', bg: (i / 60) <= played ? AMBER : 'oklch(0.756 0.016 80)' })),
+      actions: r.actions.map((a, i) => ({
+        text: a.text, box: a.done ? AMBER : 'oklch(0.702 0.016 78)', tick: a.done ? 1 : 0,
+        ink: a.done ? 'oklch(0.622 0.015 76)' : 'oklch(0.262 0.020 63)', strike: a.done ? 'line-through' : 'none',
+        onToggle: () => { a.done = !a.done; this.forceUpdate(); }
+      })),
+      lanes: r.threads.map((th, i) => ({
+        n: 'T' + (i + 1), label: th.l, bg: S.thread === i ? hue(r.b, 1) : hue(r.b, 0.42),
+        ink: S.thread === i ? 'oklch(0.215 0.022 61)' : 'oklch(0.602 0.015 76)',
+        labelInk: S.thread === i ? 'oklch(0.235 0.022 62)' : 'oklch(0.520 0.016 74)',
+        rowBg: S.thread === i ? 'oklch(0.906 0.026 81)' : 'transparent',
+        segs: th.sp.map(sp => ({ left: left(sp[0], D), width: pct(sp[1] - sp[0], D) })), gaps: this.gapsOf(th, D),
+        onSel: () => this.setState({ thread: i, t: th.sp[0][0] })
+      })),
+      threads: r.threads.map((th, i) => ({
+        n: 'T' + (i + 1), label: th.l, sum: th.s, spanLabel: this.spanLabel(th), entities: th.e,
+        isIdea: !!th.idea, hasIdea: !!th.idea, ideaNote: th.idea || '',
+        accent: S.thread === i ? hue(r.b, 1) : hue(r.b, 0.72),
+        cardBg: S.thread === i ? 'oklch(0.906 0.026 81)' : 'oklch(0.958 0.012 85)',
+        cardLine: S.thread === i ? hue(r.b, 0.45) : 'oklch(0.826 0.015 81)',
+        mini: th.sp.map(sp => ({ left: left(sp[0], D), width: pct(sp[1] - sp[0], D) })), gaps: this.gapsOf(th, D),
+        onSel: () => this.setState({ thread: i, t: th.sp[0][0] }),
+        links: (th.links || []).map((lk, li) => ({
+          title: lk.t, sim: lk.sim.toFixed(2), ticks: this.ticks(lk.sim),
+          meta: lk.d.toUpperCase() + ' · ' + lk.clock + ' · ' + lk.gap + ' APART',
+          onOpen: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({ echo: { ti: i, li: li } }); }
+        }))
+      })),
+      lines: r.tx.map((l, i) => ({
+        t: fmt(l[0]), text: l[1],
+        color: i === ai ? 'oklch(0.200 0.024 60)' : 'oklch(0.532 0.017 73)',
+        time: i === ai ? AMBER : 'oklch(0.662 0.014 77)',
+        bg: i === ai ? 'oklch(0.906 0.030 80)' : 'transparent',
+        rule: i === ai ? '2px solid ' + AMBER : '1px solid oklch(0.860 0.014 82)',
+        onSeek: () => this.setState({ t: l[0], playing: true })
+      })),
+      echoes: [], echoCount: ''
+    };
+    r.threads.forEach((th, i) => (th.links || []).forEach((lk, li) => det.echoes.push({
+      from: th.l, title: lk.t, sim: lk.sim.toFixed(2), gap: lk.gap, ticks: this.ticks(lk.sim),
+      meta: lk.d.toUpperCase() + ' · ' + lk.clock + ' · SHARED: ' + lk.shared.join(', ').toUpperCase(),
+      onOpen: () => this.setState({ echo: { ti: i, li: li } })
+    })));
+    det.echoCount = det.echoes.length + (det.echoes.length === 1 ? ' LINK' : ' LINKS');
+
+    const ideas = [];
+    REC.forEach(rr => rr.threads.forEach((th, i) => { if (th.idea) ideas.push({
+      note: th.idea, dot: hue(rr.b), entities: th.e, delay: (ideas.length * 60) + 'ms',
+      prov: 'FROM “' + rr.title + '” · ' + rr.dl + ' ' + rr.clock + ' · SPAN ' + this.spanLabel(th),
+      shortProv: rr.dl + ' ' + rr.clock + ' · ' + this.spanLabel(th), onOpen: () => this.openThread(rr.id, i)
+    }); }));
+
+    let echo = null;
+    if (S.echo) {
+      const th = r.threads[S.echo.ti], lk = th.links[S.echo.li];
+      const other = this.get(lk.rid);
+      echo = {
+        sim: lk.sim.toFixed(2), ticks: this.ticks(lk.sim), bridge: 'REMEMBERED ACROSS ' + lk.gap,
+        aMeta: 'THIS THREAD · ' + r.dl + ' ' + r.clock + ' · ' + this.spanLabel(th),
+        aLabel: th.l, aQuote: '“' + (r.tx.find(l => l[0] >= th.sp[0][0]) || r.tx[0])[1] + '”',
+        bMeta: lk.d.toUpperCase() + ' · ' + other.dl + ' ' + lk.clock + ' · ' + B[other.b].n,
+        bLabel: lk.label, bQuote: '“' + lk.q + '”', shared: lk.shared,
+        onJump: () => this.setState({ echo: null, screen: 'detail', sel: lk.rid, t: 0, playing: false, thread: 0 }),
+        onClose: () => this.setState({ echo: null })
+      };
+    }
+
+    return {
+      grain: P.grain === undefined ? 0.06 : P.grain,
+      recAnim: (P.recPulse === false) ? 'none' : 'recpulse 2.4s ease-in-out infinite',
+      styleLabel: style.toUpperCase(),
+      legend: BUCKET_KEYS.map(b => ({ name: B[b].n, dot: hue(b) })),
+      health: { clock: '11:52', line: 'SYNCED 11:47 · 41 THREADS INDEXED', device: 'FIELD-01 · 82%' },
+      isList: S.screen === 'list', isDetail: S.screen === 'detail', isIdeas: S.screen === 'ideas', isMind: S.screen === 'mind',
+      goMemos: () => this.setState({ screen: 'list', echo: null }), goIdeas: () => this.setState({ screen: 'ideas', echo: null }),
+      goMind: () => this.setState({ screen: 'mind', echo: null }),
+      tabMemos: (S.screen === 'list' || S.screen === 'detail') ? 'oklch(0.215 0.022 61)' : 'oklch(0.572 0.016 75)',
+      tabMemosLine: (S.screen === 'list' || S.screen === 'detail') ? AMBER : 'transparent',
+      tabMind: S.screen === 'mind' ? 'oklch(0.215 0.022 61)' : 'oklch(0.572 0.016 75)',
+      tabMindLine: S.screen === 'mind' ? AMBER : 'transparent',
+      tabIdeas: S.screen === 'ideas' ? 'oklch(0.215 0.022 61)' : 'oklch(0.572 0.016 75)',
+      tabIdeasLine: S.screen === 'ideas' ? AMBER : 'transparent',
+      deskPlate: this.plate(1000, 470, 46, {}), mobPlate: this.plate(354, 580, 30, { shortDays: true, coarse: true }),
+      seams: SEAMS.map((sm, i) => ({
+        n: sm.n, note: sm.note, meta: sm.days.length + ' DAYS · ' + sm.k.length + ' THREADS · PEAK ' + sm.peak,
+        ink: S.seam === i ? 'oklch(0.200 0.024 60)' : 'oklch(0.340 0.020 66)',
+        bg: S.seam === i ? 'oklch(0.906 0.026 81)' : 'transparent',
+        edge: S.seam === i ? AMBER : 'transparent',
+        cells: DAYS.map((d, di) => ({ bg: sm.days.indexOf(di) >= 0 ? (S.seam === i ? AMBER : 'oklch(0.502 0.016 72)') : 'oklch(0.846 0.014 82)' })),
+        onPick: () => this.setState({ seam: S.seam === i ? null : i })
+      })),
+      seamActive: S.seam !== null,
+      seamLabel: S.seam === null ? 'ALL ECHOES SHOWN' : 'ISOLATED: ' + SEAMS[S.seam].n.toUpperCase(),
+      clearSeam: () => this.setState({ seam: null }),
+      plateCaption: '6 DAYS · ' + REC.length + ' MEMOS · ' + REC.reduce((a, rr) => a + rr.threads.length, 0) + ' THREADS · ' + SEAMS.length + ' SEAMS',
+      q: S.q, onQuery: (e) => this.setState({ q: e.target.value }),
+      resultCount: list.length + '/' + REC.length,
+      archiveLine: '— ARCHIVE: 1,208 THREADS · 214 MEMOS · SINCE MAR 2026 —',
+      chips, groups, det, ideas, echo, ideaCount: REC.reduce((a, rr) => a + rr.threads.filter(t => t.idea).length, 0)
+    };
+  }
+}
+</script>
+</body>
+</html>

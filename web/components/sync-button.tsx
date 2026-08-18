@@ -37,14 +37,13 @@ export function SyncButton({
   return (
     <button
       onClick={sync}
-      className="flex items-center gap-2 mono text-[11px] uppercase tracking-[0.12em] border border-hairline rounded-full px-3 py-1.5 text-dim hover:text-ink hover:border-accent transition-colors"
+      className="mono text-[9px] font-medium uppercase tracking-[0.16em] px-2.5 py-1.5 transition-colors shrink-0"
+      style={{
+        border: `1px solid ${state === "error" ? "oklch(0.540 0.190 34 / 0.4)" : "var(--hairline-chip)"}`,
+        color: state === "syncing" ? "var(--accent)" : state === "error" ? "var(--danger-ink)" : "var(--ink-mid, oklch(0.440 0.018 70))",
+      }}
     >
-      <span
-        className={`size-1.5 rounded-full ${
-          state === "syncing" ? "bg-accent rec-pulse" : state === "error" ? "bg-danger" : "bg-accent"
-        }`}
-      />
-      {state === "syncing" ? "Syncing…" : state === "error" ? "Retry sync" : `Synced ${ago(lastSyncAt)}`}
+      {state === "syncing" ? "SYNCING…" : state === "error" ? "RETRY SYNC" : `SYNC · ${ago(lastSyncAt)}`}
     </button>
   );
 }
