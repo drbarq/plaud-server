@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { PlateLink, Recording } from "@/lib/types";
 
 /** MIND: the week as a plate. Days as columns, memos as vertical bands,
@@ -27,8 +27,21 @@ interface Seam {
   peak: number;
 }
 
-const PAD_L = 34, PAD_R = 14, PAD_T = 18, PAD_B = 26;
 const MIN_START = 6 * 60, MIN_END = 23 * 60; // 06:00 → 23:00
+
+// v2 spec: desktop plate 700-wide landscape; mobile variant is PORTRAIT
+// (360x580) so marks and labels render near 1:1 device pixels on a phone.
+function useIsDesktop(): boolean {
+  const [desktop, setDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const on = () => setDesktop(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return desktop;
+}
 
 function dayKey(iso: string): string {
   const d = new Date(iso);
@@ -45,7 +58,13 @@ export function MindPlate({
   onOpen: (id: string) => void;
 }) {
   const [isolated, setIsolated] = useState<number | null>(null);
-  const W = 700, H = 560;
+  const desktop = useIsDesktop();
+  const W = desktop ? 700 : 360;
+  const H = desktop ? 560 : 580;
+  const PAD_L = desktop ? 34 : 30;
+  const PAD_R = desktop ? 14 : 8;
+  const PAD_T = 18;
+  const PAD_B = 26;
 
   const model = useMemo(() => {
     const dated = recordings.filter((r) => r.startedAt && r.threads.length > 0);
@@ -143,7 +162,7 @@ export function MindPlate({
     seams.sort((a, b) => b.threadCount - a.threadCount);
 
     return { dayKeys, bands, nodes, edges, seams, y, colX };
-  }, [recordings, links]);
+  }, [recordings, links, W, H, PAD_L, PAD_R, PAD_T, PAD_B]);
 
   const iso = isolated != null ? model.seams.find((s) => s.id === isolated) : null;
   const inIso = (id: string) => !iso || iso.nodeIds.has(id);
@@ -172,12 +191,12 @@ export function MindPlate({
         )}
       </div>
 
-      <svg viewBox={`0 0 700 560`} className="w-full" style={{ overflow: "visible" }}>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ overflow: "visible" }}>
         {/* hour gridlines + labels */}
         {[6, 10, 14, 18, 22].map((h) => (
           <g key={h}>
-            <line x1={PAD_L} x2={700 - PAD_R} y1={model.y(h * 60)} y2={model.y(h * 60)} stroke="var(--hairline-grid, oklch(0.876 0.012 82))" strokeWidth={1} />
-            <text x={0} y={model.y(h * 60) + 3} className="mono" fontSize={8} fill="var(--ink-tick)" letterSpacing="0.14em">
+            <line x1={PAD_L} x2={W - PAD_R} y1={model.y(h * 60)} y2={model.y(h * 60)} stroke="var(--hairline-grid, oklch(0.876 0.012 82))" strokeWidth={1} />
+            <text x={0} y={model.y(h * 60) + 3} className="mono" fontSize={desktop ? 8 : 7.5} fill="var(--ink-tick)" letterSpacing="0.1em">
               {String(h).padStart(2, "0")}:00
             </text>
           </g>
@@ -188,9 +207,11 @@ export function MindPlate({
           const d = new Date(yr, mo, da);
           return (
             <g key={dk}>
-              <line x1={model.colX(i)} x2={model.colX(i)} y1={PAD_T} y2={560 - PAD_B + 4} stroke="oklch(0.866 0.014 82)" strokeWidth={1} strokeDasharray="1 5" />
-              <text x={model.colX(i)} y={560 - 6} textAnchor="middle" className="mono" fontSize={8} fill="var(--ink-dim)" letterSpacing="0.14em">
-                {d.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase()} {d.getDate()}
+              <line x1={model.colX(i)} x2={model.colX(i)} y1={PAD_T} y2={H - PAD_B + 4} stroke="oklch(0.866 0.014 82)" strokeWidth={1} strokeDasharray="1 5" />
+              <text x={model.colX(i)} y={H - 6} textAnchor="middle" className="mono" fontSize={desktop ? 8 : 7.5} fill="var(--ink-dim)" letterSpacing="0.14em">
+                {desktop
+                  ? `${d.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase()} ${d.getDate()}`
+                  : `${d.toLocaleDateString("en-US", { weekday: "short" })[0].toUpperCase()} ${d.getDate()}`}
               </text>
             </g>
           );
@@ -201,7 +222,7 @@ export function MindPlate({
           const mx = (e.a.x + e.b.x) / 2, my = (e.a.y + e.b.y) / 2;
           const dx = e.b.x - e.a.x, dy = e.b.y - e.a.y;
           const len = Math.hypot(dx, dy) || 1;
-          const off = Math.min(560 * 0.085, 11 + len * 0.075);
+          const off = Math.min(H * 0.085, 11 + len * 0.075);
           const cx = mx - (dy / len) * off, cy = my + (dx / len) * off;
           return (
             <g key={i}>
@@ -228,11 +249,12 @@ export function MindPlate({
         {/* memo bands + thread marks */}
         {model.bands.map((b) => (
           <g key={b.rec.id} onClick={() => onOpen(b.rec.id)} style={{ cursor: "pointer" }} data-bucket={b.rec.bucket}>
+            <rect x={b.x - 11} y={b.y0 - 10} width={22} height={b.h + 20} fill="transparent" />
             <line x1={b.x} x2={b.x} y1={b.y0} y2={b.y0 + b.h} stroke="var(--hairline-strong)" strokeWidth={1} />
-            <text x={b.x + 7} y={b.y0 - 4} className="mono" fontSize={7.5} fill="var(--ink-faint)" letterSpacing="0.1em">
+            <text x={b.x + 6} y={b.y0 - 4} className="mono" fontSize={desktop ? 7.5 : 7} fill="var(--ink-faint)" letterSpacing="0.08em">
               {b.clock}
             </text>
-            <circle cx={b.x} cy={b.y0} r={2.6} fill="var(--bucket, var(--b-misc))" />
+            <circle cx={b.x} cy={b.y0} r={desktop ? 2.6 : 3} fill="var(--bucket, var(--b-misc))" />
           </g>
         ))}
         {model.bands.map((b) =>
@@ -243,8 +265,8 @@ export function MindPlate({
             return (
               <rect
                 key={n.id}
-                x={n.x - 0.95} y={n.y - n.h / 2}
-                width={1.9} height={n.h}
+                x={n.x - (desktop ? 0.95 : 1.2)} y={n.y - n.h / 2}
+                width={desktop ? 1.9 : 2.4} height={n.h}
                 fill={t.contentIdea ? "var(--b-idea)" : "var(--bucket, var(--b-misc))"}
                 opacity={iso ? (member ? 1 : 0.14) : 0.9}
                 data-bucket={b.rec.bucket}
