@@ -1,6 +1,6 @@
 import "server-only";
 import { sql } from "./db";
-import { toRecording, type Health, type Recording } from "./types";
+import { toRecording, type Health, type PlateLink, type Recording } from "./types";
 
 export async function listRecordings(): Promise<Recording[]> {
   const rows = await sql`
@@ -38,4 +38,18 @@ export async function health(): Promise<Health> {
     reauthRequired: !!run?.reauth_required,
     awaiting: Number(run?.awaiting_routine ?? 0),
   };
+}
+
+export async function listLinks(): Promise<PlateLink[]> {
+  const rows = await sql`
+    select ta.recording_id as a_rec, ta.key as a_key, tb.recording_id as b_rec, tb.key as b_key,
+           l.sim, l.shared_entities
+    from plaud.thread_links l
+    join plaud.threads ta on ta.id = l.a
+    join plaud.threads tb on tb.id = l.b`;
+  return rows.map((r) => ({
+    aRec: r.a_rec, aKey: r.a_key, bRec: r.b_rec, bKey: r.b_key,
+    sim: Number(r.sim),
+    sharedEntities: Array.isArray(r.shared_entities) ? r.shared_entities : [],
+  }));
 }

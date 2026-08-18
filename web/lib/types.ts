@@ -80,6 +80,15 @@ export interface RecordingDetail {
   audioUrl: string | null;
 }
 
+export interface PlateLink {
+  aRec: string;
+  aKey: string;
+  bRec: string;
+  bKey: string;
+  sim: number;
+  sharedEntities: string[];
+}
+
 export interface Health {
   lastSyncAt: string | null;
   lastErrors: string[];

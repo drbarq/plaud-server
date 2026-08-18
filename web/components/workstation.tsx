@@ -3,19 +3,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { Bucket, Health, Recording } from "@/lib/types";
+import type { Bucket, Health, PlateLink, Recording } from "@/lib/types";
 import { RecordingList } from "./recording-list";
 import { DetailPane } from "./detail-pane";
 import { Toolbar } from "./toolbar";
 import { HealthBanner } from "./health-banner";
 import { SyncButton } from "./sync-button";
 import { IdeasList } from "./ideas-list";
+import { MindPlate } from "./mind-plate";
 import { usePlayback } from "./use-playback";
 
 export type SortMode = "newest" | "oldest";
-type Tab = "memos" | "ideas";
+type Tab = "memos" | "mind" | "ideas";
 
-export function Workstation({ recordings, health }: { recordings: Recording[]; health: Health }) {
+export function Workstation({ recordings, health, links }: { recordings: Recording[]; health: Health; links: PlateLink[] }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("memos");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -103,6 +104,7 @@ export function Workstation({ recordings, health }: { recordings: Recording[]; h
           THREADS
         </span>
         <TabButton active={tab === "memos"} onClick={() => setTab("memos")}>MEMOS</TabButton>
+        <TabButton active={tab === "mind"} onClick={() => setTab("mind")}>MIND</TabButton>
         <TabButton active={tab === "ideas"} onClick={() => setTab("ideas")}>IDEAS · {ideaCount}</TabButton>
         <Link
           href="/context"
@@ -113,7 +115,9 @@ export function Workstation({ recordings, health }: { recordings: Recording[]; h
         </Link>
       </div>
 
-      {tab === "ideas" ? (
+      {tab === "mind" ? (
+        <MindPlate recordings={recordings} links={links} onOpen={select} />
+      ) : tab === "ideas" ? (
         <IdeasList recordings={recordings} onOpen={select} />
       ) : (
         <div className="flex-1 min-h-0 lg:grid lg:grid-cols-3">
