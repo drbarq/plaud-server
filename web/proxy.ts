@@ -25,8 +25,10 @@ export async function proxy(request: NextRequest) {
   const email = data.user?.email?.toLowerCase();
   const authed = !!data.user && email === ALLOWED_EMAIL;
   const isSignin = request.nextUrl.pathname.startsWith("/signin");
+  // /auth/confirm must stay reachable signed-out — it IS the sign-in step
+  const isAuthFlow = request.nextUrl.pathname.startsWith("/auth/");
 
-  if (!authed && !isSignin) {
+  if (!authed && !isSignin && !isAuthFlow) {
     const url = request.nextUrl.clone();
     url.pathname = "/signin";
     url.search = "";

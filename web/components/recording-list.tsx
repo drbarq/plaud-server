@@ -69,10 +69,10 @@ export function RecordingList({
           <span className="size-[54px] rounded-full grid place-items-center mb-5" style={{ border: "1px solid var(--scroll-thumb)" }}>
             <span className="size-1.5 rounded-full" style={{ background: "oklch(0.722 0.030 62)" }} />
           </span>
-          <p className="mono text-[8px] tracking-[0.22em] mb-3.5" style={{ color: "oklch(0.582 0.015 75)" }}>
+          <p className="mono text-[10px] tracking-[0.22em] mb-3.5" style={{ color: "oklch(0.582 0.015 75)" }}>
             NOTHING FILED HERE YET
           </p>
-          <p className="italic text-[17px] leading-normal max-w-[26ch]" style={{ color: "oklch(0.340 0.020 66)" }}>
+          <p className="italic text-[18.5px] leading-normal max-w-[26ch]" style={{ color: "oklch(0.340 0.020 66)" }}>
             The recorder has been quiet in this drawer.
           </p>
         </div>
@@ -86,11 +86,11 @@ export function RecordingList({
         <section key={g.label ?? `g${gi}`}>
           {g.label && (
             <div className="sticky top-0 z-10 flex items-center gap-2.5 px-[18px] pt-3 pb-2 backdrop-blur" style={{ background: "color-mix(in oklch, var(--bg) 85%, transparent)" }}>
-              <span className="mono text-[9px] font-medium tracking-[0.22em] shrink-0" style={{ color: "oklch(0.440 0.018 70)" }}>
+              <span className="mono text-[11px] font-medium tracking-[0.22em] shrink-0" style={{ color: "oklch(0.440 0.018 70)" }}>
                 {g.label}
               </span>
               <span className="flex-1 h-px" style={{ background: "var(--hairline-chip)" }} />
-              <span className="mono text-[9px] tracking-[0.1em] shrink-0" style={{ color: "var(--ink-faint)" }}>
+              <span className="mono text-[11px] tracking-[0.1em] shrink-0" style={{ color: "var(--ink-faint)" }}>
                 {g.items.length} MEMO{g.items.length === 1 ? "" : "S"}
               </span>
             </div>
@@ -108,7 +108,7 @@ export function RecordingList({
           </ul>
         </section>
       ))}
-      <p className="mono text-[9px] leading-[1.8] tracking-[0.16em] text-center px-[18px] pt-[22px] pb-10" style={{ color: "var(--ink-ghost)" }}>
+      <p className="mono text-[11px] leading-[1.8] tracking-[0.16em] text-center px-[18px] pt-[22px] pb-10" style={{ color: "var(--ink-ghost)" }}>
         — ARCHIVE: {threadTotal} THREADS · {recordings.length} MEMOS —
       </p>
       <div ref={sentinelRef} className="h-1" />

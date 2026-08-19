@@ -28,7 +28,7 @@ export function Player({ playback, available }: { playback: Playback; available:
   if (!available) {
     return (
       <div className="fixed bottom-0 inset-x-0 lg:left-1/3 px-4 py-3" style={{ background: "var(--bg-player)", borderTop: "1px solid var(--scroll-thumb)", backdropFilter: "blur(8px)" }}>
-        <p className="mono text-[9px] uppercase tracking-[0.16em] text-center" style={{ color: "var(--ink-faint)" }}>
+        <p className="mono text-[11px] uppercase tracking-[0.16em] text-center" style={{ color: "var(--ink-faint)" }}>
           AUDIO NOT YET ARCHIVED
         </p>
       </div>
@@ -103,26 +103,26 @@ export function Player({ playback, available }: { playback: Playback; available:
       </div>
 
       <div className="flex items-center">
-        <span className="mono text-[10px] tracking-[0.1em] w-[82px]" style={{ color: "oklch(0.282 0.020 64)" }}>
+        <span className="mono text-[12px] tracking-[0.1em] w-[82px]" style={{ color: "oklch(0.282 0.020 64)" }}>
           {fmtMs(currentMs, durationMs)} / {fmtMs(durationMs)}
         </span>
         <div className="flex-1 flex items-center justify-center gap-[18px]">
-          <button onClick={() => playback.skip(-15)} className="mono text-[9px] tracking-[0.08em]" style={{ color: "oklch(0.440 0.018 70)" }}>
+          <button onClick={() => playback.skip(-15)} className="mono text-[11px] tracking-[0.08em]" style={{ color: "oklch(0.440 0.018 70)" }}>
             ↺15
           </button>
           <button
             onClick={playback.toggle}
             aria-label={playing ? "Pause" : "Play"}
-            className="size-10 rounded-full grid place-items-center mono text-[12px] font-medium"
+            className="size-10 rounded-full grid place-items-center mono text-[13px] font-medium"
             style={{ background: "var(--accent)", color: "var(--accent-ink)", boxShadow: "0 0 20px -4px oklch(0.575 0.200 47 / 0.60)" }}
           >
             {playing ? "❙❙" : "▶"}
           </button>
-          <button onClick={() => playback.skip(15)} className="mono text-[9px] tracking-[0.08em]" style={{ color: "oklch(0.440 0.018 70)" }}>
+          <button onClick={() => playback.skip(15)} className="mono text-[11px] tracking-[0.08em]" style={{ color: "oklch(0.440 0.018 70)" }}>
             15↻
           </button>
         </div>
-        <button onClick={playback.cycleSpeed} className="mono text-[10px] font-medium text-accent w-[82px] text-right">
+        <button onClick={playback.cycleSpeed} className="mono text-[12px] font-medium text-accent w-[82px] text-right">
           {speed}×
         </button>
       </div>

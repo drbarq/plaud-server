@@ -35,25 +35,25 @@ export function ThreadList({
           onClick={() => t.spans[0] && playback.seekToMs(t.spans[0].start)}
         >
           <div className="flex items-baseline gap-2">
-            <span className="mono text-[9px] font-medium tracking-[0.16em] shrink-0" style={{ color: "color-mix(in oklch, var(--bucket, var(--ink)) 72%, transparent)" }}>
+            <span className="mono text-[11px] font-medium tracking-[0.16em] shrink-0" style={{ color: "color-mix(in oklch, var(--bucket, var(--ink)) 72%, transparent)" }}>
               {t.key}
             </span>
-            <span className="mono text-[9px] tracking-[0.13em] flex-1" style={{ color: "var(--ink-meta)" }}>
+            <span className="mono text-[11px] tracking-[0.13em] flex-1" style={{ color: "var(--ink-meta)" }}>
               {spanLabel(t)}
             </span>
             {t.contentIdea && (
-              <span className="mono text-[8px] font-medium tracking-[0.16em] shrink-0 px-1.5 py-1 flex items-center gap-1" style={{ color: "var(--idea)", border: "1px solid oklch(0.520 0.150 128 / 0.5)" }}>
+              <span className="mono text-[10px] font-medium tracking-[0.16em] shrink-0 px-1.5 py-1 flex items-center gap-1" style={{ color: "var(--idea)", border: "1px solid oklch(0.520 0.150 128 / 0.5)" }}>
                 <span className="size-1 rounded-full" style={{ background: "var(--idea)" }} />
                 IDEA
               </span>
             )}
           </div>
 
-          <p className="italic text-[16px] leading-[1.35] mt-1.5" style={{ color: "var(--ink-title)" }}>
+          <p className="italic text-[17px] leading-[1.35] mt-1.5" style={{ color: "var(--ink-title)" }}>
             {t.label}
           </p>
           {t.summaryLine && t.summaryLine !== t.label && (
-            <p className="text-[13px] leading-normal font-light mt-1" style={{ color: "var(--ink-snippet)" }}>
+            <p className="text-[14.5px] leading-normal font-light mt-1" style={{ color: "var(--ink-snippet)" }}>
               {t.summaryLine}
             </p>
           )}
@@ -80,10 +80,10 @@ export function ThreadList({
 
           {t.ideaNote && (
             <div className="mt-3 px-3 py-2.5" style={{ background: "oklch(0.520 0.150 128 / 0.10)", borderLeft: "2px solid oklch(0.520 0.150 128 / 0.55)" }}>
-              <p className="mono text-[8px] font-medium tracking-[0.18em] mb-1.5" style={{ color: "var(--idea)" }}>
+              <p className="mono text-[10px] font-medium tracking-[0.18em] mb-1.5" style={{ color: "var(--idea)" }}>
                 CONTENT IDEA
               </p>
-              <p className="italic text-[13px] leading-normal font-light" style={{ color: "oklch(0.300 0.020 64)" }}>
+              <p className="italic text-[14.5px] leading-normal font-light" style={{ color: "oklch(0.300 0.020 64)" }}>
                 {t.ideaNote}
               </p>
             </div>
@@ -92,12 +92,12 @@ export function ThreadList({
           {(t.entities.length > 0 || t.actionItems.length > 0) && (
             <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
               {t.entities.map((e) => (
-                <span key={e} className="mono text-[8px] uppercase tracking-[0.13em] px-1.5 py-1" style={{ color: "var(--ink-dim)", border: "1px solid var(--hairline-strong)" }}>
+                <span key={e} className="mono text-[10px] uppercase tracking-[0.13em] px-1.5 py-1" style={{ color: "var(--ink-dim)", border: "1px solid var(--hairline-strong)" }}>
                   {e}
                 </span>
               ))}
               {t.actionItems.map((a, i) => (
-                <span key={`a${i}`} className="mono text-[9px] text-accent">→ {a.text}</span>
+                <span key={`a${i}`} className="mono text-[11px] text-accent">→ {a.text}</span>
               ))}
             </div>
           )}
@@ -110,17 +110,17 @@ export function ThreadList({
               style={{ borderLeft: "1px solid oklch(0.575 0.200 47 / 0.42)" }}
             >
               <span className="flex items-center gap-2">
-                <span className="mono text-[8px] font-medium tracking-[0.2em] text-accent">CONNECTS TO</span>
+                <span className="mono text-[10px] font-medium tracking-[0.2em] text-accent">CONNECTS TO</span>
                 <SimTicks sim={l.sim} />
-                <span className="mono text-[8px] tracking-[0.12em]" style={{ color: "var(--ink-dim)" }}>
+                <span className="mono text-[10px] tracking-[0.12em]" style={{ color: "var(--ink-dim)" }}>
                   {l.sim.toFixed(2)}
                 </span>
               </span>
-              <span className="block italic text-[14px] leading-[1.4] mt-1" style={{ color: "oklch(0.300 0.024 60)" }}>
+              <span className="block italic text-[15.5px] leading-[1.4] mt-1" style={{ color: "oklch(0.300 0.024 60)" }}>
                 {l.otherLabel}
               </span>
               {l.otherRecordingTitle && (
-                <span className="block mono text-[8px] tracking-[0.15em] uppercase mt-1.5" style={{ color: "var(--ink-idx)" }}>
+                <span className="block mono text-[10px] tracking-[0.15em] uppercase mt-1.5" style={{ color: "var(--ink-idx)" }}>
                   {l.otherRecordingTitle.slice(0, 52)}
                 </span>
               )}

@@ -92,7 +92,7 @@ export function Workstation({ recordings, health, links }: { recordings: Recordi
       {/* health strip */}
       <div className="shrink-0 flex items-center gap-2 px-[18px] pt-3 pb-2.5" style={{ borderBottom: "1px solid var(--hairline)" }}>
         <span className="size-[5px] rounded-full bg-accent rec-pulse shrink-0" />
-        <span className="mono text-[9px] tracking-[0.16em] uppercase flex-1" style={{ color: "oklch(0.520 0.016 73)" }}>
+        <span className="mono text-[11px] tracking-[0.16em] uppercase flex-1" style={{ color: "oklch(0.520 0.016 73)" }}>
           SYNCED {syncedAgo} · {threadTotal} THREADS INDEXED
         </span>
         <SyncButton lastSyncAt={health.lastSyncAt} onSynced={() => router.refresh()} />
@@ -102,7 +102,7 @@ export function Workstation({ recordings, health, links }: { recordings: Recordi
 
       {/* wordmark + tabs */}
       <div className="shrink-0 flex items-end px-[18px] pt-4 pb-0 gap-4">
-        <span className="mono text-[12px] font-semibold tracking-[0.34em] mr-auto pb-3.5" style={{ color: "var(--ink)" }}>
+        <span className="mono text-[13px] font-semibold tracking-[0.34em] mr-auto pb-3.5" style={{ color: "var(--ink)" }}>
           THREADS
         </span>
         <TabButton active={tab === "memos"} onClick={() => setTab("memos")}>MEMOS</TabButton>
@@ -110,7 +110,7 @@ export function Workstation({ recordings, health, links }: { recordings: Recordi
         <TabButton active={tab === "ideas"} onClick={() => setTab("ideas")}>IDEAS · {ideaCount}</TabButton>
         <Link
           href="/context"
-          className="mono text-[11px] font-medium tracking-[0.2em] pb-3.5"
+          className="mono text-[13px] font-medium tracking-[0.2em] pb-3.5"
           style={{ color: "var(--ink-mute)" }}
         >
           CTX
@@ -167,7 +167,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
   return (
     <button
       onClick={onClick}
-      className="mono text-[11px] font-medium tracking-[0.2em] pb-[13px]"
+      className="mono text-[13px] font-medium tracking-[0.2em] pb-[13px]"
       style={{
         color: active ? "var(--ink-title)" : "var(--ink-mute)",
         borderBottom: `1px solid ${active ? "var(--accent)" : "transparent"}`,

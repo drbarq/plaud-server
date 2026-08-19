@@ -84,15 +84,15 @@ export function SemanticResults({
             <span className="flex items-center gap-2">
               <span className="bucket-dot size-1 rounded-full shrink-0" />
               <SimTicks sim={m.sim} size={6} />
-              <span className="mono text-[8px] tracking-[0.12em]" style={{ color: "var(--ink-dim)" }}>
+              <span className="mono text-[10px] tracking-[0.12em]" style={{ color: "var(--ink-dim)" }}>
                 {m.sim.toFixed(2)}
               </span>
             </span>
-            <span className="block italic text-[14px] leading-[1.35] mt-1" style={{ color: "var(--ink-title)" }}>
+            <span className="block italic text-[15.5px] leading-[1.35] mt-1" style={{ color: "var(--ink-title)" }}>
               {m.label}
             </span>
             {m.recordingTitle && (
-              <span className="block mono text-[8px] tracking-[0.14em] uppercase mt-1" style={{ color: "var(--ink-idx)" }}>
+              <span className="block mono text-[10px] tracking-[0.14em] uppercase mt-1" style={{ color: "var(--ink-idx)" }}>
                 {m.recordingTitle.slice(0, 52)}
               </span>
             )}

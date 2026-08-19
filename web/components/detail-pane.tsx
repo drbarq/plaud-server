@@ -49,7 +49,7 @@ export function DetailPane({
       <div className="h-full grid place-items-center px-8 text-center">
         <div>
           <p className="text-2xl italic" style={{ color: "oklch(0.340 0.020 66)" }}>Select a recording</p>
-          <p className="mono text-[9px] uppercase tracking-[0.16em] mt-3" style={{ color: "var(--ink-faint)" }}>
+          <p className="mono text-[11px] uppercase tracking-[0.16em] mt-3" style={{ color: "var(--ink-faint)" }}>
             THREADS OF CONSCIOUSNESS, INDEXED
           </p>
         </div>
@@ -68,29 +68,29 @@ export function DetailPane({
   return (
     <article className="max-w-3xl mx-auto px-4 lg:px-8 py-5 pb-28" data-bucket={recording.bucket}>
       <div className="flex items-center gap-3 -mx-1 mb-4 pb-3" style={{ borderBottom: "1px solid var(--hairline)" }}>
-        <button onClick={onBack} className="lg:hidden mono text-[12px] px-1" style={{ color: "oklch(0.340 0.020 66)" }}>
+        <button onClick={onBack} className="lg:hidden mono text-[13px] px-1" style={{ color: "oklch(0.340 0.020 66)" }}>
           ←
         </button>
-        <span className="mono text-[9px] tracking-[0.18em] flex-1" style={{ color: "var(--ink-idx)" }}>
+        <span className="mono text-[11px] tracking-[0.18em] flex-1" style={{ color: "var(--ink-idx)" }}>
           {memoIdx >= 0 ? `MEMO ${String(memoIdx + 1).padStart(2, "0")} / ${String(recordings.length).padStart(2, "0")}` : ""}
         </span>
         <span className="flex items-center gap-1.5 px-2 py-1" style={{ border: "1px solid var(--bucket, var(--b-misc))" }}>
           <span className="bucket-dot size-1 rounded-full" />
-          <span className="mono text-[9px] font-medium tracking-[0.16em] uppercase bucket-ink">{recording.bucket}</span>
+          <span className="mono text-[11px] font-medium tracking-[0.16em] uppercase bucket-ink">{recording.bucket}</span>
         </span>
       </div>
 
       <header className="rise">
-        <p className="mono text-[9px] tracking-[0.18em] uppercase mb-3" style={{ color: "oklch(0.520 0.016 73)" }}>
+        <p className="mono text-[11px] tracking-[0.18em] uppercase mb-3" style={{ color: "oklch(0.520 0.016 73)" }}>
           {dateLine} · {fmtMs(recording.durationMs)}
         </p>
-        <h1 className="text-[25px] lg:text-[30px] leading-[1.24] italic font-light" style={{ color: "var(--ink-strong)", letterSpacing: "-0.012em" }}>
+        <h1 className="text-[27px] lg:text-[32px] leading-[1.24] italic font-light" style={{ color: "var(--ink-strong)", letterSpacing: "-0.012em" }}>
           {recording.title ?? recording.name}
         </h1>
         {recording.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-3.5">
             {recording.tags.map((t) => (
-              <span key={t} className="mono text-[8px] uppercase tracking-[0.14em]" style={{ color: "var(--ink-meta)" }}>
+              <span key={t} className="mono text-[10px] uppercase tracking-[0.14em]" style={{ color: "var(--ink-meta)" }}>
                 #{t}
               </span>
             ))}
@@ -177,7 +177,7 @@ function ActionItems({
               <span className="size-[5px] bg-accent transition-opacity" style={{ opacity: a.done ? 1 : 0 }} />
             </span>
             <span
-              className="text-[14px] leading-[1.45] font-light"
+              className="text-[15.5px] leading-[1.45] font-light"
               style={a.done ? { color: "oklch(0.622 0.015 76)", textDecoration: "line-through" } : { color: "var(--ink-body)" }}
             >
               {a.text}

@@ -33,7 +33,7 @@ export function IdeasList({
   if (!ideas.length) {
     return (
       <div className="flex-1 grid place-items-center px-8 text-center">
-        <p className="italic text-[17px] leading-normal" style={{ color: "oklch(0.340 0.020 66)" }}>
+        <p className="italic text-[18.5px] leading-normal" style={{ color: "oklch(0.340 0.020 66)" }}>
           Nothing flagged as an idea yet.
         </p>
       </div>
@@ -42,7 +42,7 @@ export function IdeasList({
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto pb-10">
-      <p className="italic text-[15px] leading-normal font-normal px-[18px] pt-1.5 pb-4" style={{ color: "oklch(0.400 0.020 68)" }}>
+      <p className="italic text-[16px] leading-normal font-normal px-[18px] pt-1.5 pb-4" style={{ color: "oklch(0.400 0.020 68)" }}>
         Threads the pipeline flagged as something to make, not just something to feel.
       </p>
       {ideas.map((idea, i) => {
@@ -67,20 +67,20 @@ export function IdeasList({
               animationDelay: `${Math.min(i * 60, 500)}ms`,
             }}
           >
-            <p className="italic text-[15px] leading-[1.45]" style={{ color: "var(--ink-title)" }}>
+            <p className="italic text-[16px] leading-[1.45]" style={{ color: "var(--ink-title)" }}>
               {idea.note}
             </p>
             {idea.entities.length > 0 && (
               <div className="flex flex-wrap gap-[5px] mt-2.5 mb-1">
                 {idea.entities.map((e) => (
-                  <span key={e} className="mono text-[8px] uppercase tracking-[0.13em] px-1.5 py-1" style={{ color: "var(--ink-meta)", border: "1px solid var(--hairline-chip)" }}>
+                  <span key={e} className="mono text-[10px] uppercase tracking-[0.13em] px-1.5 py-1" style={{ color: "var(--ink-meta)", border: "1px solid var(--hairline-chip)" }}>
                     {e}
                   </span>
                 ))}
               </div>
             )}
             <div className="flex items-center gap-2 mt-2.5 pt-2.5" style={{ borderTop: "1px solid var(--hairline-chip)" }}>
-              <span className="mono text-[8px] leading-normal tracking-[0.14em] flex-1" style={{ color: "var(--ink-dim2, var(--ink-idx))" }}>
+              <span className="mono text-[10px] leading-normal tracking-[0.14em] flex-1" style={{ color: "var(--ink-dim2, var(--ink-idx))" }}>
                 {prov}
               </span>
               <span className="text-accent">→</span>

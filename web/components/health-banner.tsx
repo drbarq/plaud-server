@@ -23,7 +23,7 @@ export function HealthBanner({ health }: { health: Health }) {
     return (
       <Banner tone="warn">
         Last sync had {health.lastErrors.length} error{health.lastErrors.length > 1 ? "s" : ""}:{" "}
-        <span className="mono text-[11px]">{health.lastErrors[0].slice(0, 100)}</span>
+        <span className="mono text-[13px]">{health.lastErrors[0].slice(0, 100)}</span>
       </Banner>
     );
   }
@@ -33,7 +33,7 @@ export function HealthBanner({ health }: { health: Health }) {
 function Banner({ tone, children }: { tone: "warn" | "danger"; children: React.ReactNode }) {
   return (
     <div
-      className="shrink-0 px-[18px] py-2 text-[12px] font-light border-b"
+      className="shrink-0 px-[18px] py-2 text-[13px] font-light border-b"
       style={{
         borderColor: tone === "danger" ? "oklch(0.540 0.190 34 / 0.35)" : "oklch(0.575 0.200 47 / 0.4)",
         color: tone === "danger" ? "var(--danger-ink)" : "var(--accent)",

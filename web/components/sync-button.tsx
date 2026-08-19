@@ -37,7 +37,7 @@ export function SyncButton({
   return (
     <button
       onClick={sync}
-      className="mono text-[9px] font-medium uppercase tracking-[0.16em] px-2.5 py-1.5 transition-colors shrink-0"
+      className="mono text-[11px] font-medium uppercase tracking-[0.16em] px-2.5 py-1.5 transition-colors shrink-0"
       style={{
         border: `1px solid ${state === "error" ? "oklch(0.540 0.190 34 / 0.4)" : "var(--hairline-chip)"}`,
         color: state === "syncing" ? "var(--accent)" : state === "error" ? "var(--danger-ink)" : "var(--ink-mid, oklch(0.440 0.018 70))",

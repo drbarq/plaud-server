@@ -49,12 +49,12 @@ export function Transcript({
                 borderLeft: active ? "2px solid var(--accent)" : "1px solid var(--tx-rule)",
               }}
             >
-              <span className="mono text-[9px] leading-[1.7] shrink-0 w-[30px]" style={{ color: active ? "var(--accent)" : "var(--ink-tx-t)", letterSpacing: "0.06em" }}>
+              <span className="mono text-[11px] leading-[1.7] shrink-0 w-[30px]" style={{ color: active ? "var(--accent)" : "var(--ink-tx-t)", letterSpacing: "0.06em" }}>
                 {fmtMs(u.start_ms)}
               </span>
-              <span className="flex-1 text-[14px] leading-[1.55] font-light" style={{ color: active ? "var(--ink-strong)" : "var(--ink-tx)" }}>
+              <span className="flex-1 text-[15.5px] leading-[1.55] font-light" style={{ color: active ? "var(--ink-strong)" : "var(--ink-tx)" }}>
                 {multiSpeaker && u.speaker && (
-                  <span className="mono text-[9px] uppercase tracking-[0.14em] mr-2" style={{ color: "var(--ink-meta)" }}>
+                  <span className="mono text-[11px] uppercase tracking-[0.14em] mr-2" style={{ color: "var(--ink-meta)" }}>
                     {u.speaker}
                   </span>
                 )}
@@ -64,7 +64,7 @@ export function Transcript({
           );
         })}
       </div>
-      <p className="mono text-[9px] uppercase tracking-[0.14em] mt-4" style={{ color: "var(--ink-faint)" }}>
+      <p className="mono text-[11px] uppercase tracking-[0.14em] mt-4" style={{ color: "var(--ink-faint)" }}>
         {wordCount.toLocaleString()} WORDS · {utterances.length} UTTERANCES
       </p>
     </div>

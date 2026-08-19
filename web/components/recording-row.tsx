@@ -84,25 +84,25 @@ export function RecordingRow({
       >
         <div className="flex items-center gap-2">
           <span className="bucket-dot size-[5px] rounded-full shrink-0" />
-          <span className="mono text-[9px] tracking-[0.15em] flex-1" style={{ color: "var(--ink-dim)" }}>
+          <span className="mono text-[11px] tracking-[0.15em] flex-1" style={{ color: "var(--ink-dim)" }}>
             {time} · {fmtMs(r.durationMs)} · {r.threads.length || "–"} THREAD{r.threads.length === 1 ? "" : "S"}
           </span>
           {pending ? (
-            <span className="mono text-[9px] font-medium uppercase tracking-[0.14em] text-accent rec-pulse-fast shrink-0">
+            <span className="mono text-[11px] font-medium uppercase tracking-[0.14em] text-accent rec-pulse-fast shrink-0">
               {r.status}
             </span>
           ) : ideaCount > 0 ? (
-            <span className="mono text-[9px] font-medium tracking-[0.14em] shrink-0" style={{ color: "var(--idea)" }}>
+            <span className="mono text-[11px] font-medium tracking-[0.14em] shrink-0" style={{ color: "var(--idea)" }}>
               ◆ {ideaCount}
             </span>
           ) : null}
         </div>
-        <p className="italic text-[17px] leading-[1.32] mt-1.5" style={{ color: "var(--ink)", letterSpacing: "-0.005em" }}>
+        <p className="italic text-[18.5px] leading-[1.32] mt-1.5" style={{ color: "var(--ink)", letterSpacing: "-0.005em" }}>
           {r.title ?? r.name}
         </p>
         {r.snippet && (
           <p
-            className="text-[13px] leading-normal font-light mt-1 overflow-hidden"
+            className="text-[14.5px] leading-normal font-light mt-1 overflow-hidden"
             style={{
               color: "var(--ink-snippet)",
               display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
@@ -113,8 +113,8 @@ export function RecordingRow({
         )}
         <Comb recording={r} />
         <div className="flex justify-between mt-1.5">
-          <span className="mono text-[8px] tracking-[0.14em]" style={{ color: "var(--ink-tick)" }}>0:00</span>
-          <span className="mono text-[8px] tracking-[0.14em]" style={{ color: "var(--ink-tick)" }}>{fmtMs(r.durationMs)}</span>
+          <span className="mono text-[10px] tracking-[0.14em]" style={{ color: "var(--ink-tick)" }}>0:00</span>
+          <span className="mono text-[10px] tracking-[0.14em]" style={{ color: "var(--ink-tick)" }}>{fmtMs(r.durationMs)}</span>
         </div>
       </button>
     </li>
