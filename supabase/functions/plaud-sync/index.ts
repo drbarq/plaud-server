@@ -119,11 +119,20 @@ async function getFreshToken(sql: Sql): Promise<string> {
   const exp = c.expires_at ? new Date(c.expires_at).getTime() : 0;
   if (exp && exp > Date.now() + 2 * 60 * 1000) return c.access_token;
 
-  const resp = await fetch(`${PLAUD_API}/oauth/third-party/access-token/refresh`, {
+  // Plaud switched this endpoint to form-encoded (~2026-08-17); JSON now 422s.
+  // Try form first, fall back to JSON in case they flip back.
+  let resp = await fetch(`${PLAUD_API}/oauth/third-party/access-token/refresh`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ refresh_token: c.refresh_token }),
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ refresh_token: c.refresh_token }),
   });
+  if (resp.status === 422 || resp.status === 415) {
+    resp = await fetch(`${PLAUD_API}/oauth/third-party/access-token/refresh`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ refresh_token: c.refresh_token }),
+    });
+  }
   if (!resp.ok) {
     if (resp.status >= 400 && resp.status < 500) {
       await sql`update plaud.credentials set status = 'reauth_required', updated_at = now() where id = 1`;
