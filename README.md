@@ -112,6 +112,34 @@ ssh mac-mini 'cd ~/threads && git pull && cd web && npm ci && npm run build \
   && launchctl kickstart -k gui/$(id -u)/com.joe.threads'
 ```
 
+### Hosting it somewhere else
+
+The Mac mini is a privacy choice, not a requirement. `web/` is a stock
+Next.js app — anything that can run `next build && next start` on Node 22+
+hosts it: Vercel, Fly, Railway, a VPS, a Docker container. There is no
+server-side state to migrate: no websockets, no local files, no cron on the
+web host (all crons live in Supabase), and audio streams straight from
+Supabase Storage via signed URLs. The pipeline is host-independent and keeps
+running no matter where — or whether — the front end is deployed.
+
+The pieces you need:
+
+1. **The six env vars** — copy `web/.env.example`, fill it in, and provide
+   them however your host takes env config. `PLAUD_SYNC_SECRET` must match
+   the edge-function secret; `ALLOWED_EMAIL` is the only identity allowed in.
+2. **Supabase Auth URLs** — dashboard → Authentication → URL Configuration:
+   set Site URL (and redirect allow-list) to the new domain so emailed
+   sign-in links resolve. The 6-digit code path works regardless.
+3. **A think about exposure** — on a public host the sign-in page is
+   internet-facing. Every route rejects any identity but `ALLOWED_EMAIL`,
+   and the `plaud` schema is only reachable server-side, but if you don't
+   need public reach, an access layer (Tailscale, Cloudflare Access, VPN)
+   keeps the attack surface at zero — which is exactly why this deployment
+   sits on a tailnet.
+
+On Vercel specifically: import the repo, set the root directory to `web/`,
+paste the env vars, deploy. That's the whole migration.
+
 ## On-demand sync (SYNC button)
 
 ```bash
@@ -147,8 +175,9 @@ Everything above is deployed and live; this is the from-zero reference.
      key anywhere — smart processing runs on the Claude subscription.
 3. Apply `schema.sql`, deploy the four functions, schedule the crons
    (plaud-sync on the :00s, thread-embed on the :05s).
-4. **PWA** — fill `web/.env.local`, then run `deploy/mini-setup.sh` on the
-   mini (or `npm run dev` in `web/` locally).
+4. **PWA** — copy `web/.env.example` to `web/.env.local` and fill it, then
+   run `deploy/mini-setup.sh` on the mini, deploy to any Node host (see
+   "Hosting it somewhere else"), or just `npm run dev` in `web/` locally.
 
 ## Repo layout
 
@@ -164,7 +193,7 @@ Everything above is deployed and live; this is the from-zero reference.
 | `routine-prompt.md` | deployed prompt of the plaud-process cloud routine |
 | `docs/PRD.md` | product requirements (v1.2, kept current — shipped work annotated inline) |
 | `docs/frontend.md` | front-end architecture and design notes |
-| `docs/ui-patterns.md` | clean-room UI blueprint for the PWA |
+| `docs/ui-patterns.md` | pre-build UI blueprint (historical — see frontend.md) |
 | `docs/tickets.json` | issue tracker export |
 | `legacy-mini/` | the original Mac-mini launchd pipeline (Python) — kept as fallback |
 
