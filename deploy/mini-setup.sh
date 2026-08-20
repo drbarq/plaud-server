@@ -35,14 +35,14 @@ npm ci
 npm run build
 
 echo "== launchd service =="
-PLIST="$HOME/Library/LaunchAgents/com.joetustin.threads.plist"
+PLIST="$HOME/Library/LaunchAgents/com.joe.threads.plist"
 mkdir -p "$HOME/Library/LaunchAgents" "$HOME/Library/Logs"
 cat > "$PLIST" <<PLIST_EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>Label</key><string>com.joetustin.threads</string>
+    <key>Label</key><string>com.joe.threads</string>
     <key>WorkingDirectory</key><string>$APP_DIR/web</string>
     <key>ProgramArguments</key>
     <array>

@@ -1,3 +1,14 @@
+> **Historical — pre-build blueprint (kept for rationale).** Written 2026-08-16
+> as a clean-room pattern study of riffado, before a line of `web/` existed.
+> The PWA has since shipped; **`docs/frontend.md` documents what was actually
+> built** and is the current reference. Most of this blueprint landed as
+> written — server-fetch-then-props, master-detail, the playback engine,
+> infinite scroll. Divergences: email OTP instead of Google auth; a bespoke
+> light-only token sheet instead of shadcn/next-themes; waveform peaks, the
+> command palette, and the service worker never shipped. Everything
+> thread-shaped — thread cards, echo links, the MIND plate, IDEAS, semantic
+> search — postdates this document entirely.
+
 # UI Patterns — the wheel study
 
 Clean-room pattern extraction from riffado v0.6.x (AGPL) — we adopt **approaches,
