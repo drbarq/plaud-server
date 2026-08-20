@@ -170,6 +170,31 @@ function Plate({
   const tickSize = desktop ? 10 : 9;
   const clockSize = desktop ? 9 : 8.5;
 
+  // hover: a mark highlights its own arcs; a band highlights all of its memo's
+  const [hoverNode, setHoverNode] = useState<string | null>(null);
+  const [hoverRec, setHoverRec] = useState<string | null>(null);
+  const hot = useMemo<Set<string> | null>(() => {
+    if (hoverNode) return new Set([hoverNode]);
+    if (hoverRec) {
+      const s = new Set<string>();
+      for (const id of model.nodes.keys()) if (id.startsWith(`${hoverRec}:`)) s.add(id);
+      return s;
+    }
+    return null;
+  }, [hoverNode, hoverRec, model]);
+  const edgeHot = (a: string, b: string) => !!hot && (hot.has(a) || hot.has(b));
+  // marks lit while hovering: the hovered set plus everything its arcs reach
+  const lit = useMemo<Set<string> | null>(() => {
+    if (!hot) return null;
+    const s = new Set(hot);
+    for (const e of model.edges) {
+      if (hot.has(e.a.id)) s.add(e.b.id);
+      if (hot.has(e.b.id)) s.add(e.a.id);
+    }
+    return s;
+  }, [hot, model]);
+  const FADE = { transition: "opacity 150ms, stroke-width 150ms" } as const;
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ overflow: "visible" }}>
       {/* hour gridlines + labels */}
@@ -199,6 +224,8 @@ function Plate({
       {/* echo arcs (under marks) */}
       {model.edges.map((e, i) => {
         const member = inIso(e.a.id) && inIso(e.b.id);
+        const isHot = edgeHot(e.a.id, e.b.id);
+        const emph = isHot || (!hot && iso && member);
         const mx = (e.a.x + e.b.x) / 2, my = (e.a.y + e.b.y) / 2;
         const dx = e.b.x - e.a.x, dy = e.b.y - e.a.y;
         const len = Math.hypot(dx, dy) || 1;
@@ -209,18 +236,20 @@ function Plate({
             <path
               d={`M ${e.a.x} ${e.a.y} Q ${cx} ${cy} ${e.b.x} ${e.b.y}`}
               fill="none"
-              stroke={iso && member ? "var(--accent)" : "var(--ink-dim)"}
-              strokeWidth={0.6 + (e.sim - 0.7) * 2.6 + (iso && member ? 0.5 : 0)}
-              opacity={iso ? (member ? 0.95 : 0.07) : 0.26 + (e.sim - 0.7) * 1.3}
+              stroke={emph ? "var(--accent)" : "var(--ink-dim)"}
+              strokeWidth={0.6 + (e.sim - 0.7) * 2.6 + (emph ? 0.6 : 0)}
+              opacity={hot ? (isHot ? 0.95 : 0.06) : iso ? (member ? 0.95 : 0.07) : 0.26 + (e.sim - 0.7) * 1.3}
               strokeLinecap="round"
+              style={FADE}
             />
             {[e.a, e.b].map((n, j) => (
               <circle
                 key={j}
                 cx={n.x} cy={n.y}
-                r={iso && member ? 2.6 : 1.9}
-                fill={iso && member ? "var(--accent)" : "var(--ink-dim)"}
-                opacity={iso ? (member ? 0.95 : 0.1) : 0.85}
+                r={emph ? 2.6 : 1.9}
+                fill={emph ? "var(--accent)" : "var(--ink-dim)"}
+                opacity={hot ? (isHot ? 0.95 : 0.08) : iso ? (member ? 0.95 : 0.1) : 0.85}
+                style={FADE}
               />
             ))}
           </g>
@@ -228,10 +257,17 @@ function Plate({
       })}
       {/* memo bands + thread marks */}
       {model.bands.map((b) => (
-        <g key={b.rec.id} onClick={() => onOpen(b.rec.id)} style={{ cursor: "pointer" }} data-bucket={b.rec.bucket}>
+        <g
+          key={b.rec.id}
+          onClick={() => onOpen(b.rec.id)}
+          onMouseEnter={() => setHoverRec(b.rec.id)}
+          onMouseLeave={() => setHoverRec(null)}
+          style={{ cursor: "pointer" }}
+          data-bucket={b.rec.bucket}
+        >
           <rect x={b.x - 11} y={b.y0 - 10} width={22} height={b.h + 20} fill="transparent" />
           <line x1={b.x} x2={b.x} y1={b.y0} y2={b.y0 + b.h} stroke="var(--hairline-strong)" strokeWidth={1} />
-          <text x={b.x + 6} y={b.y0 - 4} className="mono" fontSize={clockSize} fill="var(--ink-faint)" letterSpacing="0.08em">
+          <text x={b.x + 6} y={b.y0 - 4} className="mono" fontSize={clockSize} fill="var(--ink-faint)" letterSpacing="0.08em" opacity={hot && !b.rec.threads.some((t) => lit?.has(`${b.rec.id}:${t.key}`)) ? 0.3 : 1} style={FADE}>
             {b.clock}
           </text>
           <circle cx={b.x} cy={b.y0} r={desktop ? 2.6 : 3} fill="var(--bucket, var(--b-misc))" />
@@ -248,10 +284,12 @@ function Plate({
               x={n.x - (desktop ? 0.95 : 1.2)} y={n.y - n.h / 2}
               width={desktop ? 1.9 : 2.4} height={n.h}
               fill={t.contentIdea ? "var(--b-idea)" : "var(--bucket, var(--b-misc))"}
-              opacity={iso ? (member ? 1 : 0.14) : 0.9}
+              opacity={hot ? (lit?.has(n.id) ? 1 : 0.15) : iso ? (member ? 1 : 0.14) : 0.9}
               data-bucket={b.rec.bucket}
               onClick={() => onOpen(b.rec.id)}
-              style={{ cursor: "pointer" }}
+              onMouseEnter={() => setHoverNode(n.id)}
+              onMouseLeave={() => setHoverNode(null)}
+              style={{ cursor: "pointer", ...FADE }}
             />
           );
         }),
@@ -270,10 +308,12 @@ export function MindPlate({
   onOpen: (id: string) => void;
 }) {
   const [isolated, setIsolated] = useState<number | null>(null);
+  const [preview, setPreview] = useState<number | null>(null); // seam hovered in the list
 
   // seams + day dots are geometry-independent — compute once, shared by both plates
   const shared = useMemo(() => buildModel(recordings, links, MOBILE_DIMS), [recordings, links]);
-  const iso = isolated != null ? shared.seams.find((s) => s.id === isolated) ?? null : null;
+  const picked = preview ?? isolated;
+  const iso = picked != null ? shared.seams.find((s) => s.id === picked) ?? null : null;
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto px-[18px] pb-12">
@@ -290,10 +330,10 @@ export function MindPlate({
 
         <div className="flex items-center gap-2.5 pt-3 pb-2" style={{ borderTop: "1px solid var(--hairline)" }}>
           <span className="mono text-[11px] font-medium tracking-[0.22em] text-accent">
-            {iso ? `ISOLATED: ${iso.name.toUpperCase().slice(0, 30)}` : "ALL ECHOES SHOWN"}
+            {iso ? `${preview != null && preview !== isolated ? "PREVIEW" : "ISOLATED"}: ${iso.name.toUpperCase().slice(0, 30)}` : "ALL ECHOES SHOWN"}
           </span>
           <span className="flex-1" />
-          {iso && (
+          {isolated != null && (
             <button onClick={() => setIsolated(null)} className="mono text-[11px] font-medium tracking-[0.16em]" style={{ color: "var(--ink-dim2, var(--ink-idx))" }}>
               RESET
             </button>
@@ -329,7 +369,9 @@ export function MindPlate({
         {shared.seams.map((s) => (
           <button
             key={s.id}
-            onClick={() => setIsolated(isolated === s.id ? null : s.id)}
+            onClick={() => { setIsolated(isolated === s.id ? null : s.id); setPreview(null); }}
+            onMouseEnter={() => setPreview(s.id)}
+            onMouseLeave={() => setPreview(null)}
             className="block w-full text-left px-3 py-3 mb-2 transition-colors"
             style={{
               border: "1px solid var(--hairline)",
